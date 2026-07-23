@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env
+.env.local
+uploads/
+*.log
+.DS_Store
+test-db.js
+setup-db.js
+setup.sql

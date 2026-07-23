@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  TAILOR
+  VENDOR
+  EMPLOYER
+  ADMIN
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  APPRENTICESHIP
+  INTERNSHIP
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  phone     String?
+  name      String
+  password  String
+  role      Role
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tailorProfile   TailorProfile?
+  vendorProfile   VendorProfile?
+  employerProfile EmployerProfile?
+  notifications   Notification[]
+  reviewsGiven    Review[]   @relation("Reviewer")
+  reviewsReceived Review[]   @relation("Reviewed")
+
+  @@map("users")
+}
+
+model TailorProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  photo             String?
+  age               Int?
+  gender            String?
+  yearsOfExperience Int?
+  specializations   String[]
+  skills            String[]
+  portfolio         String[]
+  videos            String[]
+  certificates      String[]
+  languages         String[]
+  availability      String?
+  expectedSalary    Float?
+  bio               String?
+  location          Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tailor_profiles")
+}
+
+model VendorProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  businessName    String
+  logo            String?
+  about           String?
+  categories      String[]
+  location        Json?
+  deliveryOptions String[]
+  whatsapp        String?
+  phone           String?
+  facebook        String?
+  instagram       String?
+  tiktok          String?
+  website         String?
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@map("vendor_profiles")
+}
+
+model EmployerProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  companyName String
+  logo        String?
+  about       String?
+  industry    String?
+  location    Json?
+  whatsapp    String?
+  phone       String?
+  email       String?
+  facebook    String?
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs Job[]
+
+  @@map("employer_profiles")
+}
+
+model Product {
+  id             String   @id @default(uuid())
+  vendorId       String
+  name           String
+  description    String?
+  price          Float
+  discount       Float?
+  images         String[]
+  videos         String[]
+  category       String
+  subcategory    String?
+  location       Json?
+  deliveryOptions String[]
+  rating         Float    @default(0)
+  reviewCount    Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  vendor  VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  reviews Review[]
+
+  @@map("products")
+}
+
+model Job {
+  id                 String   @id @default(uuid())
+  employerId         String
+  title              String
+  description        String?
+  salary             Float?
+  experienceRequired String?
+  jobType            JobType
+  accommodation      String?
+  state              String?
+  city               String?
+  contactDetails     String?
+  whatsapp           String?
+  phone              String?
+  email              String?
+  facebook           String?
+  isActive           Boolean  @default(true)
+  expiresAt          DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  employer EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  reviewerId String
+  reviewedId String
+  productId  String?
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  reviewer User          @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewed User          @relation("Reviewed", fields: [reviewedId], references: [id], onDelete: Cascade)
+  product  Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
