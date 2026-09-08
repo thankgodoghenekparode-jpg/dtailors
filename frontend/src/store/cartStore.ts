@@ -18,16 +18,25 @@ const useCartStore = create<CartState>((set, get) => ({
   count: 0,
   loading: false,
 
+  
   loadCart: async () => {
     const token = localStorage.getItem("dt_token");
     if (!token) {
-      set({ items: [], count: 0 });
+      set({ items: [], count: 0, loading: false });
       return;
     }
+
     set({ loading: true });
     try {
       const res = await api.get("/cart");
-      const items = res.data.items || res.data || [];
+      const items = Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data?.items)
+          ? res.data.items
+          : Array.isArray(res.data)
+            ? res.data
+            : [];
+
       set({ items, count: items.length, loading: false });
     } catch {
       set({ items: [], count: 0, loading: false });
@@ -36,14 +45,8 @@ const useCartStore = create<CartState>((set, get) => ({
 
   addToCart: async (productId, quantity = 1) => {
     try {
-      const res = await api.post("/cart/add", { productId, quantity });
-      const items = res.data.items || res.data.cart?.items || get().items;
-      if (res.data.items || res.data.cart?.items) {
-        const newItems = res.data.items || res.data.cart?.items;
-        set({ items: newItems, count: newItems.length });
-      } else {
-        await get().loadCart();
-      }
+      await api.post("/cart/add", { productId, quantity });
+      await get().loadCart();
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to add to cart");
     }
@@ -51,13 +54,8 @@ const useCartStore = create<CartState>((set, get) => ({
 
   updateQuantity: async (itemId, quantity) => {
     try {
-      const res = await api.put(`/cart/update`, { itemId, quantity });
-      if (res.data.items || res.data.cart?.items) {
-        const newItems = res.data.items || res.data.cart?.items;
-        set({ items: newItems, count: newItems.length });
-      } else {
-        await get().loadCart();
-      }
+      await api.put(`/cart/${itemId}`, { quantity });
+      await get().loadCart();
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to update quantity");
     }
@@ -65,9 +63,8 @@ const useCartStore = create<CartState>((set, get) => ({
 
   removeItem: async (itemId) => {
     try {
-      await api.delete(`/cart/remove/${itemId}`);
-      const items = get().items.filter((i) => i.id !== itemId);
-      set({ items, count: items.length });
+      await api.delete(`/cart/${itemId}`);
+      await get().loadCart();
     } catch (error: any) {
       throw new Error(error.response?.data?.error || "Failed to remove item");
     }
