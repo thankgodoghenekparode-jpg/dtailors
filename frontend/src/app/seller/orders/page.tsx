@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import useAuthStore from "@/store/authStore";
 import toast from "react-hot-toast";
 import { Order } from "@/lib/marketTypes";
+import OrderTimeline from "@/components/market/OrderTimeline";
 import {
   ShoppingBag,
   Clock,
@@ -211,6 +212,10 @@ export default function SellerOrdersPage() {
                       )}
                     </div>
                   </div>
+                </div>
+
+                <div className="mt-4">
+                  <OrderTimeline status={order.status} createdAt={order.createdAt} updatedAt={order.updatedAt} compact />
                 </div>
 
                 {order.items?.length > 0 && (

@@ -8,7 +8,9 @@ import TailorCard from "@/components/TailorCard";
 import VendorCard from "@/components/VendorCard";
 import JobCard from "@/components/JobCard";
 import ProductCard from "@/components/ProductCard";
+import MarketProductCard from "@/components/market/ProductCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { MarketProduct } from "@/lib/marketTypes";
 import {
   Scissors,
   Store,
@@ -24,6 +26,7 @@ export default function HomePage() {
   const [vendors, setVendors] = useState<VendorProfile[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [marketProducts, setMarketProducts] = useState<MarketProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,10 +38,12 @@ export default function HomePage() {
           api.get("/jobs?limit=6"),
           api.get("/products?limit=8"),
         ]);
+        const marketRes = await api.get("/market?limit=4&sortBy=rating");
         if (tailorsRes.status === "fulfilled") setTailors(tailorsRes.value.data.data || []);
         if (vendorsRes.status === "fulfilled") setVendors(vendorsRes.value.data.data || []);
         if (jobsRes.status === "fulfilled") setJobs(jobsRes.value.data.data || []);
         if (productsRes.status === "fulfilled") setProducts(productsRes.value.data.data || []);
+        setMarketProducts(marketRes.data.data || []);
       } catch {
         // Silently fail on homepage
       } finally {
@@ -212,6 +217,25 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {marketProducts.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Marketplace Spotlight</h2>
+              <p className="mt-1 text-gray-500">Featured items from the market</p>
+            </div>
+            <Link href="/market" className="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center gap-1">
+              Shop Market <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {marketProducts.map((product) => (
+              <MarketProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>

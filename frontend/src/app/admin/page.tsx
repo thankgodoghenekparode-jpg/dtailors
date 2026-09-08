@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import useAuthStore from "@/store/authStore";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import Pagination from "@/components/Pagination";
 import toast from "react-hot-toast";
 import {
   Users,
@@ -19,6 +20,10 @@ import {
   Eye,
   BarChart3,
   RefreshCw,
+  Search,
+  Filter,
+  Image as ImageIcon,
+  BadgeCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -66,6 +71,7 @@ interface MarketProductRecord {
   price?: number;
   rating?: number;
   reviewCount?: number;
+  images?: string[];
   createdAt?: string;
   seller?: {
     id?: string;
@@ -110,6 +116,13 @@ export default function AdminPage() {
   const [marketOrders, setMarketOrders] = useState<MarketOrderRecord[]>([]);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketView, setMarketView] = useState<"products" | "sellers" | "orders">("products");
+  const [marketPagination, setMarketPagination] = useState<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+  const [marketSearch, setMarketSearch] = useState("");
+  const [marketCategory, setMarketCategory] = useState("");
+  const [marketStatus, setMarketStatus] = useState("");
+  const [marketIsActive, setMarketIsActive] = useState("");
+  const [marketOrderStatus, setMarketOrderStatus] = useState("");
+  const [marketPage, setMarketPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"overview" | "users" | "marketplace">("overview");
 
@@ -148,21 +161,43 @@ export default function AdminPage() {
   const fetchMarketplace = async () => {
     setMarketLoading(true);
     try {
-      const [productsRes, sellersRes, ordersRes] = await Promise.all([
-        api.get("/market-admin/products?limit=50"),
-        api.get("/market-admin/sellers?limit=50"),
-        api.get("/market-admin/orders?limit=50"),
-      ]);
+      const params = new URLSearchParams();
+      params.set("page", String(marketPage));
+      params.set("limit", "10");
 
-      setMarketProducts(productsRes.data.data || []);
-      setMarketSellers(sellersRes.data.data || []);
-      setMarketOrders(ordersRes.data.data || []);
+      if (marketSearch.trim()) params.set("search", marketSearch.trim());
+
+      if (marketView === "products") {
+        if (marketCategory) params.set("category", marketCategory);
+        if (marketStatus) params.set("status", marketStatus);
+        if (marketIsActive) params.set("isActive", marketIsActive);
+        const res = await api.get(`/market-admin/products?${params.toString()}`);
+        setMarketProducts(res.data.data || []);
+        setMarketPagination(res.data.pagination || null);
+      } else if (marketView === "sellers") {
+        if (marketStatus) params.set("isVerified", marketStatus);
+        if (marketIsActive) params.set("isActive", marketIsActive);
+        const res = await api.get(`/market-admin/sellers?${params.toString()}`);
+        setMarketSellers(res.data.data || []);
+        setMarketPagination(res.data.pagination || null);
+      } else {
+        if (marketOrderStatus) params.set("status", marketOrderStatus);
+        const res = await api.get(`/market-admin/orders?${params.toString()}`);
+        setMarketOrders(res.data.data || []);
+        setMarketPagination(res.data.pagination || null);
+      }
     } catch {
       toast.error("Failed to load marketplace data");
     } finally {
       setMarketLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (tab !== "marketplace") return;
+    fetchMarketplace();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, marketView, marketPage, marketSearch, marketCategory, marketStatus, marketIsActive, marketOrderStatus]);
 
   const handleVerify = async (userId: string) => {
     try {
@@ -252,6 +287,23 @@ export default function AdminPage() {
         { label: "Reviews", value: stats.totalReviews, icon: Star, color: "bg-red-50 text-red-600" },
       ]
     : [];
+
+  const marketplaceCategories = [
+    "Ankara",
+    "Fabrics",
+    "Senator",
+    "Suits",
+    "Shirts",
+    "Trousers",
+    "Dresses",
+    "Shoes",
+    "Bags",
+    "Accessories",
+    "Tailoring Materials",
+    "Electronics",
+    "Household",
+    "Others",
+  ];
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
@@ -416,7 +468,10 @@ export default function AdminPage() {
             {(["products", "sellers", "orders"] as const).map((view) => (
               <button
                 key={view}
-                onClick={() => setMarketView(view)}
+                onClick={() => {
+                  setMarketView(view);
+                  setMarketPage(1);
+                }}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${marketView === view ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 {view}
@@ -431,6 +486,72 @@ export default function AdminPage() {
             </button>
           </div>
 
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Filter className="h-4 w-4" /> Filters
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+              <div className="relative md:col-span-2 xl:col-span-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  value={marketSearch}
+                  onChange={(e) => {
+                    setMarketPage(1);
+                    setMarketSearch(e.target.value);
+                  }}
+                  placeholder={marketView === "orders" ? "Search order number" : "Search marketplace..."}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              {marketView === "products" && (
+                <>
+                  <select value={marketCategory} onChange={(e) => { setMarketPage(1); setMarketCategory(e.target.value); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white">
+                    <option value="">All Categories</option>
+                    {marketplaceCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                  </select>
+                  <select value={marketStatus} onChange={(e) => { setMarketPage(1); setMarketStatus(e.target.value); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white">
+                    <option value="">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="sold_out">Sold Out</option>
+                  </select>
+                  <select value={marketIsActive} onChange={(e) => { setMarketPage(1); setMarketIsActive(e.target.value); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white">
+                    <option value="">Any Visibility</option>
+                    <option value="true">Visible</option>
+                    <option value="false">Hidden</option>
+                  </select>
+                </>
+              )}
+
+              {marketView === "sellers" && (
+                <>
+                  <select value={marketStatus} onChange={(e) => { setMarketPage(1); setMarketStatus(e.target.value); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white">
+                    <option value="">Any Verification</option>
+                    <option value="true">Verified</option>
+                    <option value="false">Unverified</option>
+                  </select>
+                  <select value={marketIsActive} onChange={(e) => { setMarketPage(1); setMarketIsActive(e.target.value); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white">
+                    <option value="">Any Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Suspended</option>
+                  </select>
+                </>
+              )}
+
+              {marketView === "orders" && (
+                <select value={marketOrderStatus} onChange={(e) => { setMarketPage(1); setMarketOrderStatus(e.target.value); }} className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white">
+                  <option value="">All Order Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              )}
+            </div>
+          </div>
+
           {marketLoading ? (
             <div className="py-12">
               <LoadingSpinner />
@@ -442,7 +563,7 @@ export default function AdminPage() {
                   <h2 className="font-semibold text-gray-900">Marketplace Products</h2>
                   <p className="text-sm text-gray-500">Manage listing status and removals</p>
                 </div>
-                <span className="text-xs text-gray-500">{marketProducts.length} items</span>
+                <span className="text-xs text-gray-500">{marketPagination?.total ?? 0} items</span>
               </div>
               {marketProducts.length === 0 ? (
                 <div className="text-center py-14 text-gray-500">No marketplace products found</div>
@@ -462,11 +583,28 @@ export default function AdminPage() {
                       {marketProducts.map((product) => (
                         <tr key={product.id} className="border-b border-gray-50 last:border-0">
                           <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900">{product.name}</div>
-                            <div className="text-xs text-gray-500">{product.price ? `₦${product.price.toLocaleString()}` : "No price"}</div>
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100 flex items-center justify-center">
+                                {product.images?.[0] ? (
+                                  <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                                ) : (
+                                  <ImageIcon className="h-5 w-5 text-gray-300" />
+                                )}
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900">{product.name}</div>
+                                <div className="text-xs text-gray-500 flex items-center gap-2">
+                                  {product.price ? `₦${product.price.toLocaleString()}` : "No price"}
+                                  {product.reviewCount ? `• ${product.reviewCount} reviews` : ""}
+                                </div>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-gray-600">
-                            <div className="font-medium text-gray-900">{product.seller?.storeName || "-"}</div>
+                            <div className="font-medium text-gray-900 flex items-center gap-1.5">
+                              {product.seller?.storeName || "-"}
+                              {product.seller?.isVerified && <BadgeCheck className="h-4 w-4 text-green-500" />}
+                            </div>
                             <div className="text-xs text-gray-500">{product.seller?.user?.name || product.seller?.user?.email || "Unknown"}</div>
                           </td>
                           <td className="px-4 py-3 text-gray-600">{product.category}</td>
@@ -507,7 +645,7 @@ export default function AdminPage() {
                   <h2 className="font-semibold text-gray-900">Sellers</h2>
                   <p className="text-sm text-gray-500">Verify or suspend stores</p>
                 </div>
-                <span className="text-xs text-gray-500">{marketSellers.length} stores</span>
+                <span className="text-xs text-gray-500">{marketPagination?.total ?? 0} stores</span>
               </div>
               {marketSellers.length === 0 ? (
                 <div className="text-center py-14 text-gray-500">No sellers found</div>
@@ -580,7 +718,7 @@ export default function AdminPage() {
                   <h2 className="font-semibold text-gray-900">Orders</h2>
                   <p className="text-sm text-gray-500">Update order lifecycle</p>
                 </div>
-                <span className="text-xs text-gray-500">{marketOrders.length} orders</span>
+                <span className="text-xs text-gray-500">{marketPagination?.total ?? 0} orders</span>
               </div>
               {marketOrders.length === 0 ? (
                 <div className="text-center py-14 text-gray-500">No marketplace orders found</div>
@@ -633,6 +771,14 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {marketPagination && (
+            <Pagination
+              currentPage={marketPagination.page}
+              totalPages={marketPagination.totalPages}
+              onPageChange={(page) => setMarketPage(page)}
+            />
           )}
         </div>
       )}

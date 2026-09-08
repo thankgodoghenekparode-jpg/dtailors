@@ -139,7 +139,7 @@ function MessageBubble({
           <div className={`flex items-center justify-end gap-1.5 mt-1 ${isOwn ? "text-white/70" : "text-gray-400"}`}>
             <span className="text-[10px]">{formatMessageTime(message.createdAt)}</span>
             {isOwn && (
-              <span>
+              <span className="flex items-center gap-1">
                 {message.status === "read" ? (
                   <CheckCheck className="h-3.5 w-3.5 text-blue-300" />
                 ) : message.status === "delivered" ? (
@@ -147,6 +147,9 @@ function MessageBubble({
                 ) : (
                   <Check className="h-3.5 w-3.5" />
                 )}
+                <span className="text-[10px] uppercase tracking-wide">
+                  {message.status === "read" ? "Read" : message.status === "delivered" ? "Delivered" : "Sent"}
+                </span>
               </span>
             )}
           </div>
@@ -209,10 +212,12 @@ export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputText, setInputText] = useState("");
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [attachment, setAttachment] = useState<{ type: "image" | "file"; url: string; name: string } | null>(null);
   const [sending, setSending] = useState(false);
   const [mobileShowChat, setMobileShowChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const currentUserId = user?.id || "";
@@ -241,7 +246,7 @@ export default function ChatPage() {
   }, [setActiveConversation]);
 
   const handleSend = async () => {
-    if (!inputText.trim() || !activeConversation) return;
+    if (!activeConversation || (!inputText.trim() && !attachment)) return;
     const content = inputText.trim();
     setInputText("");
     setSending(true);
@@ -250,10 +255,19 @@ export default function ChatPage() {
     if (replyTo) {
       extra.replyToId = replyTo.id;
     }
+    if (attachment) {
+      if (attachment.type === "image") {
+        extra.imageUrl = attachment.url;
+      } else {
+        extra.fileUrl = attachment.url;
+        extra.fileName = attachment.name;
+      }
+    }
     setReplyTo(null);
+    setAttachment(null);
 
     try {
-      await sendMessage(activeConversation.id, content, "text", extra);
+      await sendMessage(activeConversation.id, content || attachment?.name || "Attachment", attachment?.type || "text", extra);
     } catch {
       toast.error("Failed to send message");
       setInputText(content);
@@ -278,6 +292,34 @@ export default function ChatPage() {
         setTyping(activeConversation.id, false);
       }, 2000);
     }
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File is too large. Use files under 5MB.");
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result || "");
+      const isImage = file.type.startsWith("image/");
+      setAttachment({
+        type: isImage ? "image" : "file",
+        url,
+        name: file.name,
+      });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handleDeleteMessage = async (messageId: string) => {
@@ -530,9 +572,43 @@ export default function ChatPage() {
               </div>
             )}
 
+            {attachment && (
+              <div className="px-4 pb-2 bg-white">
+                <div className="flex items-center justify-between gap-3 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                      {attachment.type === "image" ? (
+                        <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Paperclip className="h-4 w-4 text-gray-500" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-gray-900 truncate">{attachment.name}</p>
+                      <p className="text-[11px] text-gray-500 capitalize">{attachment.type}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setAttachment(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="px-4 py-3 bg-white border-t border-gray-100">
               <div className="flex items-center gap-2">
-                <button className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip,.txt"
+                  className="hidden"
+                  onChange={handleAttachmentChange}
+                />
+                <button
+                  onClick={handleAttachClick}
+                  className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                  title="Attach file"
+                >
                   <Paperclip className="h-5 w-5" />
                 </button>
                 <input
@@ -546,7 +622,7 @@ export default function ChatPage() {
                 />
                 <button
                   onClick={handleSend}
-                  disabled={!inputText.trim() || sending}
+                  disabled={(!inputText.trim() && !attachment) || sending}
                   className="p-2.5 rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Send className="h-5 w-5" />

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Star, Heart, MessageCircle, ShoppingCart } from "lucide-react";
+import { Star, Heart, MessageCircle, ShoppingCart, BadgeCheck } from "lucide-react";
 import { MarketProduct } from "@/lib/marketTypes";
 import useMarketStore from "@/store/marketStore";
 import useCartStore from "@/store/cartStore";
@@ -101,6 +101,12 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
             <span className="text-[11px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full capitalize">
               {product.condition}
             </span>
+            {product.seller?.isVerified && (
+              <span className="text-[11px] px-2 py-0.5 bg-green-50 text-green-700 rounded-full font-medium inline-flex items-center gap-1">
+                <BadgeCheck className="h-3 w-3" />
+                Verified Seller
+              </span>
+            )}
           </div>
           <h3 className="font-medium text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 text-sm">
             {product.name}

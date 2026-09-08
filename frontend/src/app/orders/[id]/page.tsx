@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { Order } from "@/lib/marketTypes";
 import Rating from "@/components/Rating";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import OrderTimeline from "@/components/market/OrderTimeline";
 import toast from "react-hot-toast";
 import {
   ArrowLeft,
@@ -129,6 +130,10 @@ export default function OrderDetailPage() {
             {cancelling ? "Cancelling..." : "Cancel Order"}
           </button>
         )}
+      </div>
+
+      <div className="mb-6">
+        <OrderTimeline status={order.status} createdAt={order.createdAt} updatedAt={order.updatedAt} />
       </div>
 
       {/* Items */}
