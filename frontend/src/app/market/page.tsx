@@ -10,20 +10,20 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Search, SlidersHorizontal, X, Flame, ShieldCheck, Truck, Zap, Grid3X3, LayoutGrid } from "lucide-react";
 
 const categories = [
-  "Ankara",
-  "Fabrics",
-  "Senator",
-  "Suits",
-  "Shirts",
-  "Trousers",
-  "Dresses",
-  "Shoes",
-  "Bags",
-  "Accessories",
-  "Tailoring Materials",
-  "Electronics",
-  "Household",
-  "Others",
+  { name: "Ankara", icon: "🎨", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=200&auto=format&fit=crop&q=80" },
+  { name: "Fabrics", icon: "🪡", image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200&auto=format&fit=crop&q=80" },
+  { name: "Senator", icon: "👔", image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&auto=format&fit=crop&q=80" },
+  { name: "Suits", icon: "🕴️", image: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?w=200&auto=format&fit=crop&q=80" },
+  { name: "Shirts", icon: "👕", image: "https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?w=200&auto=format&fit=crop&q=80" },
+  { name: "Trousers", icon: "👖", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=200&auto=format&fit=crop&q=80" },
+  { name: "Dresses", icon: "👗", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&auto=format&fit=crop&q=80" },
+  { name: "Shoes", icon: "👞", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=200&auto=format&fit=crop&q=80" },
+  { name: "Bags", icon: "👜", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200&auto=format&fit=crop&q=80" },
+  { name: "Accessories", icon: "📿", image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=200&auto=format&fit=crop&q=80" },
+  { name: "Tailoring Materials", icon: "🧵", image: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=200&auto=format&fit=crop&q=80" },
+  { name: "Electronics", icon: "⚡", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&auto=format&fit=crop&q=80" },
+  { name: "Household", icon: "🏠", image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=200&auto=format&fit=crop&q=80" },
+  { name: "Others", icon: "✨", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&auto=format&fit=crop&q=80" },
 ];
 
 const sortOptions = [
@@ -134,31 +134,56 @@ function MarketContent() {
         </div>
       </div>
 
-      {/* Horizontal Category Pill Ribbon */}
-      <div className="overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 border-b border-stone-200/60 pb-4">
-        <button
-          onClick={() => updateParams({ category: "" })}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
-            !category
-              ? "bg-primary-600 text-white shadow-md shadow-primary-600/20"
-              : "bg-white text-stone-700 border border-stone-200/80 hover:bg-stone-50"
-          }`}
-        >
-          ✨ All Items
-        </button>
-        {categories.map((c) => (
+      {/* Temu & Facebook Marketplace Visual Category Showcase */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-extrabold text-stone-900 tracking-wide uppercase">Shop By Category</span>
+          <span className="text-[11px] font-semibold text-primary-600">Scroll to explore &rarr;</span>
+        </div>
+        <div className="overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-3 border-b border-stone-200/60 pb-4">
           <button
-            key={c}
-            onClick={() => updateParams({ category: category === c ? "" : c })}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
-              category === c
-                ? "bg-primary-600 text-white shadow-md shadow-primary-600/20"
-                : "bg-white text-stone-700 border border-stone-200/80 hover:bg-stone-50"
+            onClick={() => updateParams({ category: "" })}
+            className={`flex flex-col items-center gap-2 p-2.5 rounded-2xl transition-all shrink-0 min-w-[76px] ${
+              !category
+                ? "bg-primary-600 text-white shadow-md shadow-primary-600/25 scale-105"
+                : "bg-white text-stone-700 border border-stone-200/80 hover:bg-stone-50 hover:border-primary-300"
             }`}
           >
-            {c}
+            <div className={`h-11 w-11 rounded-full flex items-center justify-center text-lg font-bold ${!category ? "bg-white/20 text-white" : "bg-primary-50 text-primary-600"}`}>
+              ✨
+            </div>
+            <span className="text-[11px] font-bold text-center leading-tight">All Items</span>
           </button>
-        ))}
+
+          {categories.map((c) => {
+            const isActive = category === c.name;
+            return (
+              <button
+                key={c.name}
+                onClick={() => updateParams({ category: isActive ? "" : c.name })}
+                className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all shrink-0 min-w-[80px] group ${
+                  isActive
+                    ? "bg-stone-900 text-white shadow-lg shadow-stone-900/20 scale-105 ring-2 ring-primary-500"
+                    : "bg-white text-stone-800 border border-stone-200/80 hover:bg-stone-50 hover:border-primary-300 hover:scale-102"
+                }`}
+              >
+                <div className="h-12 w-12 rounded-full overflow-hidden relative bg-stone-100 border border-stone-200/60 shadow-xs shrink-0">
+                  <img
+                    src={c.image}
+                    alt={c.name}
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <span className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-stone-900/80 backdrop-blur-xs text-[10px] flex items-center justify-center shadow-xs">
+                    {c.icon}
+                  </span>
+                </div>
+                <span className="text-[11px] font-extrabold text-center leading-tight max-w-[84px] truncate">
+                  {c.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Search & Toolbar Bar */}
