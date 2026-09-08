@@ -83,26 +83,37 @@ export default function HomePage() {
   ];
 
   return (
-    <div>
-      <section className="relative bg-gradient-to-br from-primary-600 via-primary-500 to-accent-500 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl" />
+    <div className="space-y-12 pb-16">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-stone-900 via-primary-950 to-stone-900 overflow-hidden text-white py-24 sm:py-32">
+        {/* Glow Effects & Ambient Orbs */}
+        <div className="absolute inset-0 opacity-25 pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-primary-500 to-accent-500 rounded-full blur-[140px] animate-pulse-glow" />
+          <div className="absolute -bottom-20 right-10 w-96 h-96 bg-amber-500/30 rounded-full blur-3xl" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
-              Africa&apos;s Premier{" "}
-              <span className="text-accent-200">Fashion</span> Marketplace
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-accent-300 shadow-sm animate-float">
+              <span className="flex h-2 w-2 rounded-full bg-accent-400 animate-ping" />
+              Africa&apos;s #1 Fashion & Textile Hub
+            </div>
+
+            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
+              Crafting Africa&apos;s Next Generation of{" "}
+              <span className="bg-gradient-to-r from-accent-300 via-primary-400 to-accent-200 bg-clip-text text-transparent">
+                Fashion & Style
+              </span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-white/80 max-w-2xl mx-auto">
-              Connect with skilled tailors, trusted fabric vendors, and top employers.
-              Everything you need for the fashion industry, in one place.
+
+            <p className="text-base sm:text-xl text-stone-300 max-w-2xl mx-auto leading-relaxed font-light">
+              Connect directly with verified tailors, authentic African fabric vendors, and top fashion employers in one premium ecosystem.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+
+            <div className="pt-4 flex flex-col sm:flex-row gap-3.5 justify-center items-center">
               <Link
                 href="/tailors"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-primary-600 rounded-xl font-semibold hover:bg-primary-50 transition-colors shadow-lg"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <Scissors className="h-5 w-5" />
                 Find Tailors
@@ -110,73 +121,77 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/vendors"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 text-white border border-white/30 rounded-xl font-semibold hover:bg-white/20 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-xl font-semibold hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <Store className="h-5 w-5" />
+                <Store className="h-5 w-5 text-accent-300" />
                 Shop Fabrics
               </Link>
               <Link
                 href="/jobs"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 text-white border border-white/30 rounded-xl font-semibold hover:bg-white/20 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-xl font-semibold hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <Briefcase className="h-5 w-5" />
+                <Briefcase className="h-5 w-5 text-emerald-400" />
                 Browse Jobs
               </Link>
             </div>
-            <div className="mt-10 flex items-center justify-center gap-8 text-white/70">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">2,500+</div>
-                <div className="text-sm">Tailors</div>
+
+            {/* Stat Counters Banner */}
+            <div className="pt-10 grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+              <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white">2,500+</div>
+                <div className="text-xs text-stone-400 font-medium mt-0.5">Verified Tailors</div>
               </div>
-              <div className="w-px h-8 bg-white/30" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">1,200+</div>
-                <div className="text-sm">Vendors</div>
+              <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white">1,200+</div>
+                <div className="text-xs text-stone-400 font-medium mt-0.5">Fabric Vendors</div>
               </div>
-              <div className="w-px h-8 bg-white/30" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">5,000+</div>
-                <div className="text-sm">Jobs Posted</div>
+              <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white">5,000+</div>
+                <div className="text-xs text-stone-400 font-medium mt-0.5">Jobs Created</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center justify-between mb-8">
+      {/* Popular Categories Grid */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-2">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Popular Categories</h2>
-            <p className="mt-1 text-gray-500">Browse by fabric type</p>
+            <span className="text-xs font-extrabold tracking-wider text-primary-600 uppercase">Categories</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Popular Fabrics & Materials</h2>
           </div>
+          <p className="text-xs text-stone-500">Explore authentic African textiles by material</p>
         </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {categories.map((cat) => (
             <Link
               key={cat.name}
               href={`/vendors?category=${cat.name}`}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-all group"
+              className="group flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-stone-200/70 hover:border-primary-300 hover-lift transition-all text-center"
             >
-              <span className="text-3xl">{cat.icon}</span>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600">{cat.name}</span>
-              <span className="text-xs text-gray-400">{cat.count}</span>
+              <span className="text-3xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
+              <span className="text-xs font-bold text-stone-800 group-hover:text-primary-600 transition-colors">{cat.name}</span>
+              <span className="text-[11px] font-medium text-stone-400">{cat.count}</span>
             </Link>
           ))}
         </div>
       </section>
 
+      {/* Featured Tailors */}
       {tailors.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Featured Tailors</h2>
-              <p className="mt-1 text-gray-500">Skilled professionals ready to bring your designs to life</p>
+              <span className="text-xs font-extrabold tracking-wider text-primary-600 uppercase">Master Craftsmen</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Featured Tailors</h2>
             </div>
-            <Link href="/tailors" className="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center gap-1">
-              View All <ArrowRight className="h-4 w-4" />
+            <Link href="/tailors" className="text-primary-600 hover:text-primary-700 text-xs font-bold flex items-center gap-1 bg-primary-50 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors">
+              View All <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {tailors.map((t) => (
               <TailorCard key={t.id} tailor={t} />
             ))}
@@ -184,18 +199,19 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Featured Vendors */}
       {vendors.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Featured Vendors</h2>
-              <p className="mt-1 text-gray-500">Quality fabrics and materials at the best prices</p>
+              <span className="text-xs font-extrabold tracking-wider text-accent-600 uppercase">Fabric Suppliers</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Featured Vendors</h2>
             </div>
-            <Link href="/vendors" className="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center gap-1">
-              View All <ArrowRight className="h-4 w-4" />
+            <Link href="/vendors" className="text-accent-600 hover:text-accent-700 text-xs font-bold flex items-center gap-1 bg-accent-50 px-3 py-1.5 rounded-full hover:bg-accent-100 transition-colors">
+              View All <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {vendors.map((v) => (
               <VendorCard key={v.id} vendor={v} />
             ))}
@@ -203,18 +219,19 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Trending Products */}
       {products.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Trending Products</h2>
-              <p className="mt-1 text-gray-500">Popular items from our vendors</p>
+              <span className="text-xs font-extrabold tracking-wider text-primary-600 uppercase">Catalog</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Trending Products</h2>
             </div>
-            <Link href="/vendors" className="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center gap-1">
-              View All <ArrowRight className="h-4 w-4" />
+            <Link href="/vendors" className="text-primary-600 hover:text-primary-700 text-xs font-bold flex items-center gap-1 bg-primary-50 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors">
+              View All <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -222,18 +239,19 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Marketplace Spotlight */}
       {marketProducts.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Marketplace Spotlight</h2>
-              <p className="mt-1 text-gray-500">Featured items from the market</p>
+              <span className="text-xs font-extrabold tracking-wider text-accent-600 uppercase">Spotlight</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Marketplace Highlights</h2>
             </div>
-            <Link href="/market" className="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center gap-1">
-              Shop Market <ArrowRight className="h-4 w-4" />
+            <Link href="/market" className="text-accent-600 hover:text-accent-700 text-xs font-bold flex items-center gap-1 bg-accent-50 px-3 py-1.5 rounded-full hover:bg-accent-100 transition-colors">
+              Shop Market <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {marketProducts.map((product) => (
               <MarketProductCard key={product.id} product={product} />
             ))}
@@ -241,18 +259,19 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Latest Jobs */}
       {jobs.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Latest Jobs</h2>
-              <p className="mt-1 text-gray-500">Find your next opportunity in fashion</p>
+              <span className="text-xs font-extrabold tracking-wider text-emerald-600 uppercase">Opportunities</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Latest Job Postings</h2>
             </div>
-            <Link href="/jobs" className="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center gap-1">
-              View All <ArrowRight className="h-4 w-4" />
+            <Link href="/jobs" className="text-emerald-600 hover:text-emerald-700 text-xs font-bold flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors">
+              View All <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {jobs.map((j) => (
               <JobCard key={j.id} job={j} />
             ))}
@@ -260,27 +279,30 @@ export default function HomePage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Success Stories</h2>
-          <p className="mt-1 text-gray-500">Hear from our community</p>
+      {/* Testimonials Section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-10 max-w-lg mx-auto">
+          <span className="text-xs font-extrabold tracking-wider text-primary-600 uppercase">Community Feedback</span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Trusted by Fashion Creators</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-6">
-              <div className="flex items-center gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="h-4 w-4 fill-accent-400 text-accent-400" />
-                ))}
+            <div key={i} className="bg-white rounded-2xl border border-stone-200/70 p-6 hover-lift relative flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-stone-600 text-xs leading-relaxed italic">&quot;{t.text}&quot;</p>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed">&quot;{t.text}&quot;</p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-semibold text-sm">
+              <div className="mt-6 flex items-center gap-3 pt-4 border-t border-stone-100">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                   {t.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.role}</p>
+                  <p className="text-xs font-bold text-stone-900">{t.name}</p>
+                  <p className="text-[11px] font-medium text-stone-500">{t.role}</p>
                 </div>
               </div>
             </div>
@@ -288,40 +310,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Get Started Today</h2>
-            <p className="mt-1 text-gray-500">Join thousands of fashion professionals</p>
+      {/* CTA Onboarding Section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="bg-stone-900 rounded-3xl p-8 sm:p-12 relative overflow-hidden text-white">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white">Join the D Tailors Ecosystem</h2>
+            <p className="mt-2 text-sm text-stone-400">Select your role to get started with tailored tools and marketplace access.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 text-center border border-gray-100">
-              <div className="h-14 w-14 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Scissors className="h-7 w-7 text-primary-600" />
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 text-center border border-white/10 hover:border-primary-500/50 transition-all">
+              <div className="h-12 w-12 bg-primary-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-primary-400">
+                <Scissors className="h-6 w-6" />
               </div>
-              <h3 className="font-semibold text-gray-900">Are you a Tailor?</h3>
-              <p className="text-sm text-gray-500 mt-1">Showcase your skills and find more clients</p>
-              <Link href="/auth/register" className="mt-4 inline-block px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+              <h3 className="font-bold text-white text-base">Are you a Tailor?</h3>
+              <p className="text-xs text-stone-400 mt-1">Showcase your portfolio & take custom orders</p>
+              <Link href="/auth/register" className="mt-5 inline-block w-full py-2.5 bg-primary-500 text-white rounded-xl text-xs font-bold hover:bg-primary-600 transition-colors shadow-md shadow-primary-500/20">
                 Join as Tailor
               </Link>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-center border border-gray-100">
-              <div className="h-14 w-14 bg-accent-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Store className="h-7 w-7 text-accent-600" />
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 text-center border border-white/10 hover:border-accent-500/50 transition-all">
+              <div className="h-12 w-12 bg-accent-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-accent-400">
+                <Store className="h-6 w-6" />
               </div>
-              <h3 className="font-semibold text-gray-900">Are you a Vendor?</h3>
-              <p className="text-sm text-gray-500 mt-1">Sell your fabrics to thousands of customers</p>
-              <Link href="/auth/register" className="mt-4 inline-block px-4 py-2 bg-accent-500 text-white rounded-lg text-sm font-medium hover:bg-accent-600 transition-colors">
+              <h3 className="font-bold text-white text-base">Are you a Vendor?</h3>
+              <p className="text-xs text-stone-400 mt-1">Sell fabrics & materials to thousands</p>
+              <Link href="/auth/register" className="mt-5 inline-block w-full py-2.5 bg-accent-500 text-white rounded-xl text-xs font-bold hover:bg-accent-600 transition-colors shadow-md shadow-accent-500/20">
                 Join as Vendor
               </Link>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-center border border-gray-100">
-              <div className="h-14 w-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users className="h-7 w-7 text-green-600" />
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 text-center border border-white/10 hover:border-emerald-500/50 transition-all">
+              <div className="h-12 w-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-emerald-400">
+                <Users className="h-6 w-6" />
               </div>
-              <h3 className="font-semibold text-gray-900">Are you an Employer?</h3>
-              <p className="text-sm text-gray-500 mt-1">Hire talented tailors and apprentices</p>
-              <Link href="/auth/register" className="mt-4 inline-block px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors">
+              <h3 className="font-bold text-white text-base">Are you an Employer?</h3>
+              <p className="text-xs text-stone-400 mt-1">Post fashion jobs & hire talent</p>
+              <Link href="/auth/register" className="mt-5 inline-block w-full py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors shadow-md shadow-emerald-500/20">
                 Join as Employer
               </Link>
             </div>
