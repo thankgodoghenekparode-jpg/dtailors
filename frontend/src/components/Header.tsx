@@ -14,14 +14,18 @@ import {
   LogOut,
   LogIn,
   ChevronDown,
+  MessageCircle,
+  Heart,
+  ShoppingCart,
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
+import useCartStore from "@/store/cartStore";
 
 const navLinks = [
+  { href: "/market", label: "Market", icon: ShoppingBag },
   { href: "/tailors", label: "Tailors", icon: Scissors },
   { href: "/vendors", label: "Vendors", icon: Store },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/vendors", label: "Products", icon: ShoppingBag },
 ];
 
 export default function Header() {
@@ -30,10 +34,17 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, loadUser } = useAuthStore();
+  const { count: cartCount, loadCart } = useCartStore();
 
   useEffect(() => {
     loadUser();
   }, [loadUser]);
+
+  useEffect(() => {
+    if (user) {
+      loadCart();
+    }
+  }, [user, loadCart]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -90,9 +101,35 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1">
             {user ? (
               <>
+                <Link
+                  href="/wishlist"
+                  className="p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors relative"
+                  title="Wishlist"
+                >
+                  <Heart className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/chat"
+                  className="p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors relative"
+                  title="Chat"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/cart"
+                  className="p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors relative"
+                  title="Cart"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary-500 text-white text-[10px] flex items-center justify-center font-semibold">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
                 <Link
                   href="/dashboard"
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
@@ -174,6 +211,39 @@ export default function Header() {
             <hr className="my-2" />
             {user ? (
               <>
+                <Link
+                  href="/market"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  Market
+                </Link>
+                <Link
+                  href="/cart"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Cart
+                  {cartCount > 0 && (
+                    <span className="ml-auto h-4 min-w-4 px-1 rounded-full bg-primary-500 text-white text-[10px] flex items-center justify-center font-semibold">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href="/chat"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Messages
+                </Link>
+                <Link
+                  href="/wishlist"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <Heart className="h-4 w-4" />
+                  Wishlist
+                </Link>
                 <Link
                   href="/dashboard"
                   className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"

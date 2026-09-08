@@ -35,9 +35,16 @@ model User {
   tailorProfile   TailorProfile?
   vendorProfile   VendorProfile?
   employerProfile EmployerProfile?
+  sellerProfile   SellerProfile?
   notifications   Notification[]
   reviewsGiven    Review[]   @relation("Reviewer")
   reviewsReceived Review[]   @relation("Reviewed")
+  cartItems       CartItem[]
+  orders          Order[]    @relation("BuyerOrders")
+  wishlist        Wishlist[]
+  sentMessages    Message[]
+  buyerConversations Conversation[] @relation("BuyerConversations")
+  marketReviews   MarketReview[]
 
   @@map("users")
 }
@@ -187,4 +194,176 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model SellerProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  storeName        String
+  storeDescription String?
+  logo             String?
+  banner           String?
+  location         Json?
+  phone            String?
+  whatsapp         String?
+  isVerified       Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  rating           Float    @default(0)
+  reviewCount      Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products        MarketProduct[]
+  conversations   Conversation[]
+  orders          Order[]          @relation("SellerOrders")
+
+  @@map("seller_profiles")
+}
+
+model MarketProduct {
+  id            String   @id @default(uuid())
+  sellerId      String
+  name          String
+  description   String?
+  price         Float
+  discountPrice Float?
+  images        String[]
+  category      String
+  stock         Int      @default(1)
+  location      Json?
+  condition     String   @default("new")
+  sizes         String[]
+  colors        String[]
+  specifications Json?
+  status        String   @default("active")
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  seller       SellerProfile  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  reviews      MarketReview[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  wishlist     Wishlist[]
+  conversations Conversation[]
+
+  @@map("market_products")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product MarketProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id              String   @id @default(uuid())
+  userId          String
+  sellerId        String
+  orderNumber     String   @unique
+  totalAmount     Float
+  status          String   @default("pending")
+  shippingAddress Json?
+  paymentMethod   String?
+  phone           String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user   User          @relation("BuyerOrders", fields: [userId], references: [id], onDelete: Cascade)
+  seller SellerProfile @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Cascade)
+  items  OrderItem[]
+
+  @@map("market_orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int      @default(1)
+  price     Float
+
+  order   Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product MarketProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model MarketReview {
+  id         String   @id @default(uuid())
+  reviewerId String
+  productId  String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  reviewer User          @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  product  MarketProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("market_reviews")
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product MarketProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist")
+}
+
+model Conversation {
+  id             String   @id @default(uuid())
+  buyerId        String
+  sellerId       String
+  productId      String?
+  lastMessage    String?
+  lastMessageAt  DateTime?
+  buyerUnread    Int      @default(0)
+  sellerUnread   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  buyer   User           @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller  SellerProfile  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  product MarketProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  messages Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String
+  type           String   @default("text")
+  imageUrl       String?
+  fileUrl        String?
+  replyToId      String?
+  status         String   @default("sent")
+  isDeleted      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
