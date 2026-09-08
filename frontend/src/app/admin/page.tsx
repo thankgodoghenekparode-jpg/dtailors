@@ -18,6 +18,7 @@ import {
   Trash2,
   Eye,
   BarChart3,
+  RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -56,6 +57,46 @@ interface ProductRecord {
   createdAt: string;
 }
 
+interface MarketProductRecord {
+  id: string;
+  name: string;
+  category: string;
+  status?: string;
+  isActive?: boolean;
+  price?: number;
+  rating?: number;
+  reviewCount?: number;
+  createdAt?: string;
+  seller?: {
+    id?: string;
+    storeName?: string;
+    isVerified?: boolean;
+    user?: { name?: string; email?: string };
+  };
+}
+
+interface SellerRecord {
+  id: string;
+  storeName: string;
+  storeDescription?: string;
+  isVerified?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  user?: { id?: string; name?: string; email?: string; phone?: string };
+  _count?: { products?: number; orders?: number };
+}
+
+interface MarketOrderRecord {
+  id: string;
+  orderNumber: string;
+  status: string;
+  total: number;
+  createdAt: string;
+  user?: { name?: string; email?: string; phone?: string };
+  seller?: { storeName?: string };
+  items?: Array<{ id: string; quantity: number; product?: { name?: string } }>;
+}
+
 export default function AdminPage() {
   const { user } = useAuthStore();
   const router = useRouter();
@@ -64,8 +105,13 @@ export default function AdminPage() {
   const [recentProducts, setRecentProducts] = useState<ProductRecord[]>([]);
   const [recentJobs, setRecentJobs] = useState<JobRecord[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [marketProducts, setMarketProducts] = useState<MarketProductRecord[]>([]);
+  const [marketSellers, setMarketSellers] = useState<SellerRecord[]>([]);
+  const [marketOrders, setMarketOrders] = useState<MarketOrderRecord[]>([]);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [marketView, setMarketView] = useState<"products" | "sellers" | "orders">("products");
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"overview" | "users">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "marketplace">("overview");
 
   useEffect(() => {
     if (user && user.role !== "ADMIN") {
@@ -99,6 +145,25 @@ export default function AdminPage() {
     }
   };
 
+  const fetchMarketplace = async () => {
+    setMarketLoading(true);
+    try {
+      const [productsRes, sellersRes, ordersRes] = await Promise.all([
+        api.get("/market-admin/products?limit=50"),
+        api.get("/market-admin/sellers?limit=50"),
+        api.get("/market-admin/orders?limit=50"),
+      ]);
+
+      setMarketProducts(productsRes.data.data || []);
+      setMarketSellers(sellersRes.data.data || []);
+      setMarketOrders(ordersRes.data.data || []);
+    } catch {
+      toast.error("Failed to load marketplace data");
+    } finally {
+      setMarketLoading(false);
+    }
+  };
+
   const handleVerify = async (userId: string) => {
     try {
       await api.put(`/admin/users/${userId}/verify`);
@@ -119,6 +184,57 @@ export default function AdminPage() {
       if (resource === "users") setAllUsers((prev) => prev.filter((u) => u.id !== id));
     } catch {
       toast.error("Failed to delete");
+    }
+  };
+
+  const handleProductStatus = async (id: string, isActive: boolean) => {
+    try {
+      await api.put(`/market-admin/products/${id}/status`, { isActive });
+      toast.success(isActive ? "Product activated" : "Product deactivated");
+      setMarketProducts((prev) => prev.map((p) => (p.id === id ? { ...p, isActive } : p)));
+    } catch {
+      toast.error("Failed to update product");
+    }
+  };
+
+  const handleProductDelete = async (id: string) => {
+    if (!confirm("Delete this marketplace product?")) return;
+    try {
+      await api.delete(`/market-admin/products/${id}`);
+      toast.success("Product deleted");
+      setMarketProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      toast.error("Failed to delete product");
+    }
+  };
+
+  const handleSellerVerify = async (id: string) => {
+    try {
+      await api.put(`/market-admin/sellers/${id}/verify`);
+      toast.success("Seller verification updated");
+      setMarketSellers((prev) => prev.map((s) => (s.id === id ? { ...s, isVerified: !s.isVerified } : s)));
+    } catch {
+      toast.error("Failed to update seller verification");
+    }
+  };
+
+  const handleSellerStatus = async (id: string, isActive: boolean) => {
+    try {
+      await api.put(`/market-admin/sellers/${id}/status`, { isActive });
+      toast.success(isActive ? "Seller activated" : "Seller deactivated");
+      setMarketSellers((prev) => prev.map((s) => (s.id === id ? { ...s, isActive } : s)));
+    } catch {
+      toast.error("Failed to update seller status");
+    }
+  };
+
+  const handleOrderStatus = async (id: string, status: string) => {
+    try {
+      await api.put(`/market-admin/orders/${id}/status`, { status });
+      toast.success("Order status updated");
+      setMarketOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    } catch {
+      toast.error("Failed to update order status");
     }
   };
 
@@ -161,6 +277,13 @@ export default function AdminPage() {
           >
             <Users className="h-4 w-4 inline mr-1" />
             Users
+          </button>
+          <button
+            onClick={() => { setTab("marketplace"); fetchMarketplace(); }}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${tab === "marketplace" ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          >
+            <Store className="h-4 w-4 inline mr-1" />
+            Marketplace
           </button>
         </div>
       </div>
@@ -282,6 +405,233 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "marketplace" && (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {(["products", "sellers", "orders"] as const).map((view) => (
+              <button
+                key={view}
+                onClick={() => setMarketView(view)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${marketView === view ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >
+                {view}
+              </button>
+            ))}
+            <button
+              onClick={fetchMarketplace}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${marketLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+          </div>
+
+          {marketLoading ? (
+            <div className="py-12">
+              <LoadingSpinner />
+            </div>
+          ) : marketView === "products" ? (
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-gray-900">Marketplace Products</h2>
+                  <p className="text-sm text-gray-500">Manage listing status and removals</p>
+                </div>
+                <span className="text-xs text-gray-500">{marketProducts.length} items</span>
+              </div>
+              {marketProducts.length === 0 ? (
+                <div className="text-center py-14 text-gray-500">No marketplace products found</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50">
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Product</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Seller</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Category</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {marketProducts.map((product) => (
+                        <tr key={product.id} className="border-b border-gray-50 last:border-0">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-900">{product.name}</div>
+                            <div className="text-xs text-gray-500">{product.price ? `₦${product.price.toLocaleString()}` : "No price"}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            <div className="font-medium text-gray-900">{product.seller?.storeName || "-"}</div>
+                            <div className="text-xs text-gray-500">{product.seller?.user?.name || product.seller?.user?.email || "Unknown"}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">{product.category}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs px-2 py-1 rounded-full ${product.isActive === false ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+                              {product.isActive === false ? "Inactive" : "Active"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleProductStatus(product.id, !(product.isActive ?? true))}
+                                className="p-1.5 text-gray-400 hover:text-primary-500 rounded-lg hover:bg-primary-50"
+                                title={product.isActive === false ? "Activate" : "Deactivate"}
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleProductDelete(product.id)}
+                                className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : marketView === "sellers" ? (
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-gray-900">Sellers</h2>
+                  <p className="text-sm text-gray-500">Verify or suspend stores</p>
+                </div>
+                <span className="text-xs text-gray-500">{marketSellers.length} stores</span>
+              </div>
+              {marketSellers.length === 0 ? (
+                <div className="text-center py-14 text-gray-500">No sellers found</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50">
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Store</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Owner</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Counts</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Flags</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {marketSellers.map((seller) => (
+                        <tr key={seller.id} className="border-b border-gray-50 last:border-0">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-900">{seller.storeName}</div>
+                            <div className="text-xs text-gray-500">{seller.storeDescription || "No description"}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            <div className="font-medium text-gray-900">{seller.user?.name || "-"}</div>
+                            <div className="text-xs text-gray-500">{seller.user?.email || "-"}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 text-xs">
+                            Products: {seller._count?.products ?? 0}<br />
+                            Orders: {seller._count?.orders ?? 0}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col gap-1">
+                              <span className={`text-xs px-2 py-1 rounded-full w-fit ${seller.isVerified ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-700"}`}>
+                                {seller.isVerified ? "Verified" : "Unverified"}
+                              </span>
+                              <span className={`text-xs px-2 py-1 rounded-full w-fit ${seller.isActive === false ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-600"}`}>
+                                {seller.isActive === false ? "Suspended" : "Active"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleSellerVerify(seller.id)}
+                                className="p-1.5 text-gray-400 hover:text-green-500 rounded-lg hover:bg-green-50"
+                                title="Toggle verification"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleSellerStatus(seller.id, !(seller.isActive ?? true))}
+                                className="p-1.5 text-gray-400 hover:text-primary-500 rounded-lg hover:bg-primary-50"
+                                title={seller.isActive === false ? "Activate" : "Suspend"}
+                              >
+                                <Shield className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-gray-900">Orders</h2>
+                  <p className="text-sm text-gray-500">Update order lifecycle</p>
+                </div>
+                <span className="text-xs text-gray-500">{marketOrders.length} orders</span>
+              </div>
+              {marketOrders.length === 0 ? (
+                <div className="text-center py-14 text-gray-500">No marketplace orders found</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50">
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Order</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Buyer</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Seller</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-500">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {marketOrders.map((order) => (
+                        <tr key={order.id} className="border-b border-gray-50 last:border-0">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-900">{order.orderNumber}</div>
+                            <div className="text-xs text-gray-500">₦{(order.total || 0).toLocaleString()}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            <div className="font-medium text-gray-900">{order.user?.name || "-"}</div>
+                            <div className="text-xs text-gray-500">{order.user?.email || "-"}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">{order.seller?.storeName || "-"}</td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleOrderStatus(order.id, e.target.value)}
+                              className="rounded-lg border border-gray-200 px-3 py-2 text-xs bg-white"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="completed">Completed</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>
