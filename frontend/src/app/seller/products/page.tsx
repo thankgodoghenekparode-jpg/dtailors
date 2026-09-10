@@ -55,7 +55,7 @@ export default function SellerProductsPage() {
   const loadProducts = async () => {
     try {
       const res = await api.get("/sellers/my-products");
-      setProducts(res.data.products || res.data || []);
+      setProducts(res.data.data || res.data.products || res.data || []);
     } catch {
       toast.error("Failed to load products");
     } finally {

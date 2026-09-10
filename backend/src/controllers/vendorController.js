@@ -115,19 +115,26 @@ const createProduct = async (req, res) => {
   try {
     const {
       name, description, price, discount, category, subcategory,
-      deliveryOptions, location
+      deliveryOptions, location, images: bodyImages
     } = req.body;
 
     if (!name || !price || !category) {
       return res.status(400).json({ error: 'Name, price, and category are required' });
     }
 
-    const vendor = await prisma.vendorProfile.findUnique({ where: { userId: req.user.id } });
+    let vendor = await prisma.vendorProfile.findUnique({ where: { userId: req.user.id } });
     if (!vendor) {
-      return res.status(404).json({ error: 'Vendor profile not found' });
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      vendor = await prisma.vendorProfile.create({
+        data: {
+          userId: req.user.id,
+          businessName: user?.name ? `${user.name}'s Fabric Store` : 'My Fabric Store',
+          about: 'Quality fabrics and textiles'
+        }
+      });
     }
 
-    const images = [];
+    let images = [];
     const videos = [];
 
     if (req.files) {
@@ -137,6 +144,22 @@ const createProduct = async (req, res) => {
       if (req.files.videos) {
         req.files.videos.forEach(f => videos.push(`/uploads/${f.filename}`));
       }
+    }
+
+    if (images.length === 0 && bodyImages) {
+      if (Array.isArray(bodyImages)) {
+        images = bodyImages;
+      } else if (typeof bodyImages === 'string') {
+        try {
+          images = JSON.parse(bodyImages);
+        } catch {
+          images = [bodyImages];
+        }
+      }
+    }
+
+    if (images.length === 0) {
+      images = ['https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=600&auto=format&fit=crop&q=80'];
     }
 
     const product = await prisma.product.create({
@@ -167,9 +190,16 @@ const getProducts = async (req, res) => {
     const { page, limit } = req.query;
     const { page: p, limit: l, skip } = paginate(page, limit);
 
-    const vendor = await prisma.vendorProfile.findUnique({ where: { userId: req.user.id } });
+    let vendor = await prisma.vendorProfile.findUnique({ where: { userId: req.user.id } });
     if (!vendor) {
-      return res.status(404).json({ error: 'Vendor profile not found' });
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      vendor = await prisma.vendorProfile.create({
+        data: {
+          userId: req.user.id,
+          businessName: user?.name ? `${user.name}'s Fabric Store` : 'My Fabric Store',
+          about: 'Quality fabrics and textiles'
+        }
+      });
     }
 
     const [products, total] = await Promise.all([

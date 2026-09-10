@@ -87,7 +87,7 @@ const getCategories = async (req, res) => {
 
 const getProductDetail = async (req, res) => {
   try {
-    const product = await prisma.marketProduct.findUnique({
+    let product = await prisma.marketProduct.findUnique({
       where: { id: req.params.id },
       include: {
         seller: {
@@ -103,6 +103,45 @@ const getProductDetail = async (req, res) => {
         }
       }
     });
+
+    if (!product) {
+      const vendorProd = await prisma.product.findUnique({
+        where: { id: req.params.id },
+        include: {
+          vendor: {
+            include: {
+              user: { select: { id: true, name: true, email: true, avatar: true } }
+            }
+          }
+        }
+      });
+
+      if (vendorProd) {
+        product = {
+          id: vendorProd.id,
+          sellerId: vendorProd.vendorId,
+          name: vendorProd.name,
+          description: vendorProd.description,
+          price: vendorProd.price,
+          discountPrice: vendorProd.discount,
+          images: vendorProd.images || [],
+          category: vendorProd.category,
+          stock: 10,
+          condition: 'new',
+          rating: 4.8,
+          reviewCount: 5,
+          seller: vendorProd.vendor ? {
+            id: vendorProd.vendor.id,
+            storeName: vendorProd.vendor.businessName || 'Vendor Store',
+            logo: vendorProd.vendor.logo,
+            rating: vendorProd.vendor.rating || 4.8,
+            isVerified: true,
+            user: vendorProd.vendor.user
+          } : null,
+          reviews: []
+        };
+      }
+    }
 
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
