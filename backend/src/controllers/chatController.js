@@ -101,8 +101,12 @@ const getOrCreateConversation = async (req, res) => {
         include: {
           buyer: { select: { id: true, name: true, avatar: true } },
           seller: {
-            select: { id: true, storeName: true, logo: true },
-            include: { user: { select: { name: true, avatar: true } } }
+            select: {
+              id: true,
+              storeName: true,
+              logo: true,
+              user: { select: { id: true, name: true, avatar: true } }
+            }
           },
           product: { select: { id: true, name: true, images: true, price: true } }
         }
@@ -119,8 +123,12 @@ const getOrCreateConversation = async (req, res) => {
       include: {
         buyer: { select: { id: true, name: true, avatar: true } },
         seller: {
-          select: { id: true, storeName: true, logo: true },
-          include: { user: { select: { name: true, avatar: true } } }
+          select: {
+            id: true,
+            storeName: true,
+            logo: true,
+            user: { select: { id: true, name: true, avatar: true } }
+          }
         },
         product: { select: { id: true, name: true, images: true, price: true } }
       }
@@ -150,8 +158,12 @@ const listConversations = async (req, res) => {
         include: {
           buyer: { select: { id: true, name: true, avatar: true } },
           seller: {
-            select: { id: true, storeName: true, logo: true },
-            include: { user: { select: { name: true, avatar: true } } }
+            select: {
+              id: true,
+              storeName: true,
+              logo: true,
+              user: { select: { id: true, name: true, avatar: true } }
+            }
           },
           product: { select: { id: true, name: true, images: true, price: true } }
         },
