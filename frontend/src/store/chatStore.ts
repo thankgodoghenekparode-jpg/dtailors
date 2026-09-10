@@ -146,26 +146,32 @@ const useChatStore = create<ChatState>((set, get) => ({
   loadConversations: async () => {
     try {
       const res = await api.get("/chat/conversations");
-      const conversations = res.data.conversations || res.data || [];
+      const raw = res.data?.conversations || res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      const conversations = Array.isArray(raw) ? raw : [];
       const totalUnread = conversations.reduce(
-        (sum: number, c: Conversation) => sum + (c.unreadCount || 0),
+        (sum: number, c: Conversation) => sum + (c?.unreadCount || 0),
         0
       );
       set({ conversations, unreadCount: totalUnread });
     } catch (err) {
       console.error("Failed to load conversations", err);
+      set({ conversations: [], unreadCount: 0 });
     }
   },
 
   loadMessages: async (conversationId: string) => {
     try {
       const res = await api.get(`/chat/conversations/${conversationId}/messages`);
-      const msgs = res.data.messages || res.data || [];
+      const raw = res.data?.messages || res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      const msgs = Array.isArray(raw) ? raw : [];
       set((state) => ({
         messages: { ...state.messages, [conversationId]: msgs },
       }));
     } catch (err) {
       console.error("Failed to load messages", err);
+      set((state) => ({
+        messages: { ...state.messages, [conversationId]: [] },
+      }));
     }
   },
 
@@ -213,7 +219,7 @@ const useChatStore = create<ChatState>((set, get) => ({
         const updated = msgs.map((m) => (m.id === tempId ? { ...m, ...real } : m));
         return {
           messages: { ...state.messages, [conversationId]: updated },
-          conversations: state.conversations.map((c) =>
+          conversations: (Array.isArray(state.conversations) ? state.conversations : []).map((c) =>
             c.id === conversationId
               ? { ...c, lastMessage: real, updatedAt: real.createdAt }
               : c
@@ -244,9 +250,13 @@ const useChatStore = create<ChatState>((set, get) => ({
     const conversation = res.data.conversation || res.data;
 
     set((state) => {
-      const exists = state.conversations.find((c) => c.id === conversation.id);
-      if (exists) return state;
-      return { conversations: [conversation, ...state.conversations] };
+      const currentList = Array.isArray(state.conversations) ? state.conversations : [];
+      const exists = currentList.find((c) => c && c.id === conversation.id);
+      if (exists) return { activeConversation: conversation };
+      return {
+        conversations: [conversation, ...currentList],
+        activeConversation: conversation,
+      };
     });
 
     return conversation;

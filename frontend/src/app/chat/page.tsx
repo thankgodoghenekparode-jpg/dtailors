@@ -51,24 +51,41 @@ function formatMessageTime(dateStr: string) {
 }
 
 function getOtherUser(conversation: Conversation, currentUserId: string) {
-  if (conversation.otherParticipant) {
-    return conversation.otherParticipant;
+  if (!conversation) {
+    return { id: "", name: "User", avatar: undefined, phone: undefined };
   }
-  if (conversation.participants && conversation.participants.length > 0) {
-    const p = conversation.participants.find((item) => item.id !== currentUserId);
-    if (p) return p;
+  if (conversation.otherParticipant) {
+    return {
+      id: conversation.otherParticipant.id || "",
+      name: conversation.otherParticipant.name || "User",
+      avatar: conversation.otherParticipant.avatar,
+      phone: conversation.otherParticipant.phone,
+    };
+  }
+  if (conversation.participants && Array.isArray(conversation.participants) && conversation.participants.length > 0) {
+    const p = conversation.participants.find((item) => item && item.id !== currentUserId);
+    if (p) {
+      return {
+        id: p.id || "",
+        name: p.name || "User",
+        avatar: p.avatar,
+        phone: p.phone,
+      };
+    }
   }
   if (conversation.buyerId === currentUserId) {
     return {
       id: conversation.seller?.user?.id || conversation.seller?.id || "",
       name: conversation.seller?.storeName || conversation.seller?.user?.name || "Seller",
       avatar: conversation.seller?.logo || conversation.seller?.user?.avatar,
+      phone: undefined,
     };
   }
   return {
     id: conversation.buyer?.id || "",
     name: conversation.buyer?.name || "User",
     avatar: conversation.buyer?.avatar,
+    phone: undefined,
   };
 }
 
@@ -699,7 +716,7 @@ export default function ChatPage() {
                       {other.avatar ? (
                         <img src={other.avatar} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        other.name.charAt(0).toUpperCase()
+                        (other.name || "U").charAt(0).toUpperCase()
                       )}
                     </div>
                     {isOnline && (
@@ -708,7 +725,7 @@ export default function ChatPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900 text-sm truncate">{other.name}</span>
+                      <span className="font-medium text-gray-900 text-sm truncate">{other.name || "User"}</span>
                       <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">
                         {conv.lastMessage ? formatTime(conv.lastMessage.createdAt) : ""}
                       </span>
@@ -751,7 +768,7 @@ export default function ChatPage() {
                   {activeOther.avatar ? (
                     <img src={activeOther.avatar} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    activeOther.name.charAt(0).toUpperCase()
+                    (activeOther.name || "U").charAt(0).toUpperCase()
                   )}
                 </div>
                 {isOtherOnline && (
