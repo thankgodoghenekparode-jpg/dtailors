@@ -62,14 +62,6 @@ export default function HeroSection() {
           animate="visible"
           className="text-center max-w-3xl mx-auto space-y-6"
         >
-          {/* Badge Assembly */}
-          <motion.div variants={itemVariants} className="inline-block">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-amber-300 text-xs sm:text-sm font-semibold shadow-lg shadow-black/20">
-              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              Africa&apos;s Premier Fashion & Textile Marketplace
-            </div>
-          </motion.div>
 
           {/* Heading Writeup Assembly */}
           <motion.h1

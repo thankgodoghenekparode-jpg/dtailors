@@ -7,6 +7,7 @@ import { MarketProduct, PaginatedResponse } from "@/lib/marketTypes";
 import MarketProductCard from "@/components/market/ProductCard";
 import Pagination from "@/components/Pagination";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { motion } from "framer-motion";
 import { Search, SlidersHorizontal, X, Flame, ShieldCheck, Truck, Zap, Grid3X3, LayoutGrid } from "lucide-react";
 
 const categories = [
@@ -100,7 +101,12 @@ function MarketContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Temu Style Flash Banner */}
-      <div className="bg-gradient-to-r from-stone-900 via-primary-950 to-stone-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-stone-900/10">
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, type: "spring", stiffness: 220, damping: 20 }}
+        className="bg-gradient-to-r from-stone-900 via-primary-950 to-stone-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-stone-900/10"
+      >
         <div className="absolute top-0 right-0 w-80 h-80 bg-accent-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -132,7 +138,7 @@ function MarketContent() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Temu & Facebook Marketplace Visual Category Showcase */}
       <div className="space-y-2">
