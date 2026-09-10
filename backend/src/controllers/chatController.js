@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 async function resolveSellerProfile(targetId) {
   if (!targetId) return null;
+
   // 1. Try SellerProfile by id
   let seller = await prisma.sellerProfile.findUnique({ where: { id: targetId } });
   if (seller) return seller;
@@ -20,8 +21,10 @@ async function resolveSellerProfile(targetId) {
     if (seller) return seller;
     const u = await prisma.user.findUnique({ where: { id: tailor.userId } });
     if (u) {
-      return await prisma.sellerProfile.create({
-        data: { userId: u.id, storeName: u.name, logo: u.avatar }
+      return await prisma.sellerProfile.upsert({
+        where: { userId: u.id },
+        update: {},
+        create: { userId: u.id, storeName: u.name || 'Tailor Store', logo: u.avatar }
       });
     }
   }
@@ -33,8 +36,10 @@ async function resolveSellerProfile(targetId) {
     if (seller) return seller;
     const u = await prisma.user.findUnique({ where: { id: vendor.userId } });
     if (u) {
-      return await prisma.sellerProfile.create({
-        data: { userId: u.id, storeName: vendor.businessName || u.name, logo: vendor.logo || u.avatar }
+      return await prisma.sellerProfile.upsert({
+        where: { userId: u.id },
+        update: {},
+        create: { userId: u.id, storeName: vendor.businessName || u.name || 'Vendor Store', logo: vendor.logo || u.avatar }
       });
     }
   }
@@ -42,8 +47,10 @@ async function resolveSellerProfile(targetId) {
   // 5. Try User by id
   const u = await prisma.user.findUnique({ where: { id: targetId } });
   if (u) {
-    return await prisma.sellerProfile.create({
-      data: { userId: u.id, storeName: u.name, logo: u.avatar }
+    return await prisma.sellerProfile.upsert({
+      where: { userId: u.id },
+      update: {},
+      create: { userId: u.id, storeName: u.name || 'User Store', logo: u.avatar }
     });
   }
 
@@ -60,6 +67,11 @@ const getOrCreateConversation = async (req, res) => {
       return res.status(400).json({ error: 'Recipient/Seller ID is required' });
     }
 
+    const buyer = await prisma.user.findUnique({ where: { id: buyerId } });
+    if (!buyer) {
+      return res.status(401).json({ error: 'User account not found. Please log in again.' });
+    }
+
     const seller = await resolveSellerProfile(targetId);
     if (!seller) {
       return res.status(404).json({ error: 'Recipient not found' });
@@ -69,11 +81,17 @@ const getOrCreateConversation = async (req, res) => {
       return res.status(400).json({ error: 'Cannot start a conversation with yourself' });
     }
 
+    let validProductId = null;
+    if (productId && typeof productId === 'string' && productId.trim() !== '') {
+      const prod = await prisma.marketProduct.findUnique({ where: { id: productId } });
+      if (prod) validProductId = prod.id;
+    }
+
     const existing = await prisma.conversation.findFirst({
       where: {
         buyerId,
         sellerId: seller.id,
-        ...(productId ? { productId } : {})
+        ...(validProductId ? { productId: validProductId } : {})
       }
     });
 
@@ -96,7 +114,7 @@ const getOrCreateConversation = async (req, res) => {
       data: {
         buyerId,
         sellerId: seller.id,
-        productId: productId || null
+        productId: validProductId
       },
       include: {
         buyer: { select: { id: true, name: true, avatar: true } },
@@ -111,7 +129,7 @@ const getOrCreateConversation = async (req, res) => {
     res.status(201).json({ conversation });
   } catch (error) {
     console.error('GetOrCreateConversation error:', error);
-    res.status(500).json({ error: 'Failed to create conversation' });
+    res.status(500).json({ error: error.message || 'Failed to create conversation' });
   }
 };
 

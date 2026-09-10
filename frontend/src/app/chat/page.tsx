@@ -51,10 +51,24 @@ function formatMessageTime(dateStr: string) {
 }
 
 function getOtherUser(conversation: Conversation, currentUserId: string) {
-  return conversation.participants?.find((p) => p.id !== currentUserId) || {
-    id: "",
-    name: "Unknown",
-    avatar: undefined,
+  if (conversation.otherParticipant) {
+    return conversation.otherParticipant;
+  }
+  if (conversation.participants && conversation.participants.length > 0) {
+    const p = conversation.participants.find((item) => item.id !== currentUserId);
+    if (p) return p;
+  }
+  if (conversation.buyerId === currentUserId) {
+    return {
+      id: conversation.seller?.user?.id || conversation.seller?.id || "",
+      name: conversation.seller?.storeName || conversation.seller?.user?.name || "Seller",
+      avatar: conversation.seller?.logo || conversation.seller?.user?.avatar,
+    };
+  }
+  return {
+    id: conversation.buyer?.id || "",
+    name: conversation.buyer?.name || "User",
+    avatar: conversation.buyer?.avatar,
   };
 }
 
