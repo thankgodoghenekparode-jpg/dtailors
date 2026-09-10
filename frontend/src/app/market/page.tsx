@@ -2,12 +2,13 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 import { MarketProduct, PaginatedResponse } from "@/lib/marketTypes";
 import MarketProductCard from "@/components/market/ProductCard";
 import Pagination from "@/components/Pagination";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Search, SlidersHorizontal, X, Flame, ShieldCheck, Truck, Zap, Grid3X3, LayoutGrid } from "lucide-react";
+import { Search, SlidersHorizontal, X, Flame, ShieldCheck, Truck, Zap, Grid3X3, LayoutGrid, Plus } from "lucide-react";
 
 const categories = [
   { name: "Ankara", icon: "🎨", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=200&auto=format&fit=crop&q=80" },
@@ -103,7 +104,7 @@ function MarketContent() {
       <div className="bg-gradient-to-r from-stone-900 via-primary-950 to-stone-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-stone-900/10">
         <div className="absolute top-0 right-0 w-80 h-80 bg-accent-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-500/20 border border-accent-400/30 text-accent-300 text-xs font-bold">
               <Flame className="h-3.5 w-3.5 fill-accent-400 text-accent-400" />
               TEMU & MARKETPLACE SELECTION
@@ -114,6 +115,21 @@ function MarketContent() {
             <p className="text-xs sm:text-sm text-stone-300 max-w-xl font-light">
               Buy directly from verified fabric vendors, master tailors, and fashion creators with buyer protection.
             </p>
+            <div className="pt-2 flex flex-wrap gap-3">
+              <Link
+                href="/seller/products/new"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent-500 to-amber-500 text-stone-900 font-extrabold text-xs shadow-lg shadow-accent-500/20 hover:scale-[1.03] active:scale-[0.98] transition-all"
+              >
+                <Plus className="h-4 w-4 stroke-[3]" />
+                + List an Item for Sale
+              </Link>
+              <Link
+                href="/seller/apply"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white border border-white/20 font-bold text-xs hover:bg-white/20 transition-all"
+              >
+                Create Seller Store
+              </Link>
+            </div>
           </div>
 
           {/* Guarantees Chips */}

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Scissors, Mail, Phone, MapPin, Sparkles } from "lucide-react";
+import { Mail, Phone, MapPin, Sparkles } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function Footer() {
   return (
@@ -12,11 +13,10 @@ export default function Footer() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <div className="flex items-center gap-2.5 mb-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-accent-500 shadow-md shadow-primary-500/20">
-                <Scissors className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-extrabold text-white tracking-tight">D Tailors</span>
+            <div className="mb-5">
+              <Link href="/">
+                <Logo size="md" />
+              </Link>
             </div>
             <p className="text-xs text-stone-400 leading-relaxed max-w-xs">
               Africa&apos;s premier fashion ecosystem. Empowering tailors, fabric vendors, and employers with a seamlessly connected digital marketplace.
