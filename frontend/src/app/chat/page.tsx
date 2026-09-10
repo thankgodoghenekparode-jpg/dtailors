@@ -16,10 +16,17 @@ import {
   CheckCheck,
   X,
   Image as ImageIcon,
+  Plus,
+  UserPlus,
+  Loader2,
+  Scissors,
+  Store,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import useChatStore from "@/store/chatStore";
 import useAuthStore from "@/store/authStore";
 import toast from "react-hot-toast";
+import api from "@/lib/api";
 import { Conversation, Message } from "@/lib/chatTypes";
 
 function formatTime(dateStr: string) {
@@ -60,6 +67,230 @@ function TypingDots() {
         <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
       </div>
     </div>
+  );
+}
+
+function StartChatModal({
+  isOpen,
+  onClose,
+  onSelectContact,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectContact: (targetId: string, name: string) => Promise<void>;
+}) {
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [startingId, setStartingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    const fetchContacts = async () => {
+      setLoading(true);
+      try {
+        const [tailorsRes, vendorsRes] = await Promise.allSettled([
+          api.get("/tailors?limit=30"),
+          api.get("/vendors?limit=30"),
+        ]);
+
+        const list: any[] = [];
+
+        if (tailorsRes.status === "fulfilled") {
+          const tailorsData = tailorsRes.value.data?.data || tailorsRes.value.data || [];
+          tailorsData.forEach((t: any) => {
+            list.push({
+              id: t.id,
+              targetId: t.userId || t.id,
+              name: t.user?.name || "Tailor & Designer",
+              avatar: t.user?.avatar || t.photo,
+              role: "Tailor",
+              detail: t.specializations?.slice(0, 3).join(", ") || t.skills?.slice(0, 3).join(", ") || "Fashion Tailor",
+            });
+          });
+        }
+
+        if (vendorsRes.status === "fulfilled") {
+          const vendorsData = vendorsRes.value.data?.data || vendorsRes.value.data || [];
+          vendorsData.forEach((v: any) => {
+            list.push({
+              id: v.id,
+              targetId: v.userId || v.id,
+              name: v.businessName || v.user?.name || "Textile Vendor",
+              avatar: v.logo || v.user?.avatar,
+              role: "Vendor",
+              detail: v.categories?.slice(0, 3).join(", ") || "Fabrics & Accessories",
+            });
+          });
+        }
+
+        if (isMounted) setContacts(list);
+      } catch (err) {
+        console.error("Failed to load contacts", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchContacts();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const filtered = contacts.filter((c) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      (c.detail && c.detail.toLowerCase().includes(q)) ||
+      c.role.toLowerCase().includes(q)
+    );
+  });
+
+  const handleSelect = async (c: any) => {
+    setStartingId(c.targetId);
+    try {
+      await onSelectContact(c.targetId, c.name);
+      onClose();
+    } finally {
+      setStartingId(null);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary-500" />
+                Start a New Chat
+              </h2>
+              <p className="text-xs text-gray-500">Select a tailor or vendor to message</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="p-4 border-b border-gray-100 bg-white">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name, skills, fabrics..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 rounded-xl text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                autoFocus
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Contacts List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 min-h-[260px]">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-500 mb-2" />
+                <p className="text-xs font-medium">Finding available contacts...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-12">
+                <UserPlus className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-700">No contacts found</p>
+                <p className="text-xs text-gray-400 mt-1">Try a different search query</p>
+              </div>
+            ) : (
+              filtered.map((c) => {
+                const isSelected = startingId === c.targetId;
+                return (
+                  <button
+                    key={`${c.role}-${c.id}`}
+                    onClick={() => handleSelect(c)}
+                    disabled={startingId !== null}
+                    className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-primary-50/60 transition-all border border-transparent hover:border-primary-100 group text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-sm overflow-hidden shadow-inner">
+                          {c.avatar ? (
+                            <img src={c.avatar} alt={c.name} className="h-full w-full object-cover" />
+                          ) : (
+                            c.name.charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        <div
+                          className={`absolute -bottom-0.5 -right-0.5 p-1 rounded-full border-2 border-white text-white text-[9px] font-bold ${
+                            c.role === "Tailor" ? "bg-amber-500" : "bg-emerald-500"
+                          }`}
+                        >
+                          {c.role === "Tailor" ? (
+                            <Scissors className="h-2.5 w-2.5" />
+                          ) : (
+                            <Store className="h-2.5 w-2.5" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-gray-900 text-sm truncate group-hover:text-primary-700">
+                            {c.name}
+                          </h4>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                              c.role === "Tailor"
+                                ? "bg-amber-50 text-amber-600 border border-amber-200"
+                                : "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                            }`}
+                          >
+                            {c.role}
+                          </span>
+                        </div>
+                        {c.detail && (
+                          <p className="text-xs text-gray-500 truncate mt-0.5">{c.detail}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex-shrink-0 ml-3">
+                      {isSelected ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-primary-500" />
+                      ) : (
+                        <span className="text-xs font-semibold text-primary-600 bg-primary-100/70 group-hover:bg-primary-500 group-hover:text-white px-3.5 py-1.5 rounded-xl transition-all">
+                          Chat
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
   );
 }
 
@@ -215,6 +446,8 @@ export default function ChatPage() {
   const [attachment, setAttachment] = useState<{ type: "image" | "file"; url: string; name: string } | null>(null);
   const [sending, setSending] = useState(false);
   const [mobileShowChat, setMobileShowChat] = useState(false);
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -244,6 +477,18 @@ export default function ChatPage() {
     setMobileShowChat(true);
     setReplyTo(null);
   }, [setActiveConversation]);
+
+  const handleStartChatWithContact = async (targetId: string, name: string) => {
+    try {
+      const conv = await startConversation(targetId);
+      setActiveConversation(conv);
+      setMobileShowChat(true);
+      toast.success(`Chat started with ${name}`);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || "Failed to start conversation";
+      toast.error(errorMsg);
+    }
+  };
 
   const handleSend = async () => {
     if (!activeConversation || (!inputText.trim() && !attachment)) return;
@@ -372,12 +617,21 @@ export default function ChatPage() {
       <div className={`w-full md:w-96 lg:w-[400px] bg-white border-r border-gray-200 flex flex-col ${mobileShowChat ? "hidden md:flex" : "flex"}`}>
         <div className="px-4 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-bold text-gray-900">Messages</h1>
-            {unreadCount > 0 && (
-              <span className="bg-primary-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                {unreadCount}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+              {unreadCount > 0 && (
+                <span className="bg-primary-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => setIsNewChatModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-500 text-white text-xs font-semibold hover:bg-primary-600 transition-all shadow-md shadow-primary-500/20 active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Start Chat</span>
+            </button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -393,11 +647,25 @@ export default function ChatPage() {
 
         <div className="flex-1 overflow-y-auto">
           {filteredConversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <MessageSquare className="h-12 w-12 text-gray-300 mb-3" />
-              <p className="text-gray-500 text-sm">
+            <div className="flex flex-col items-center justify-center h-full text-center px-4 py-12">
+              <div className="h-16 w-16 rounded-full bg-primary-50 flex items-center justify-center text-primary-500 mb-3">
+                <MessageSquare className="h-8 w-8" />
+              </div>
+              <p className="text-gray-900 font-semibold text-sm mb-1">
                 {searchQuery ? "No conversations found" : "No messages yet"}
               </p>
+              <p className="text-gray-500 text-xs max-w-xs mb-4">
+                {searchQuery ? "Try searching with a different name" : "Start a new conversation with a tailor or vendor"}
+              </p>
+              {!searchQuery && (
+                <button
+                  onClick={() => setIsNewChatModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-xs font-semibold hover:bg-primary-600 transition-all shadow-md shadow-primary-500/20 active:scale-95"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Start New Chat</span>
+                </button>
+              )}
             </div>
           ) : (
             filteredConversations.map((conv) => {
@@ -632,16 +900,30 @@ export default function ChatPage() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
-            <div className="h-20 w-20 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
+            <div className="h-20 w-20 rounded-2xl bg-primary-50 flex items-center justify-center mb-4 text-primary-500 shadow-inner">
               <MessageSquare className="h-10 w-10 text-primary-400" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900 mb-1">Select a conversation</h2>
-            <p className="text-sm text-gray-500 max-w-xs">
-              Choose a conversation from the left to start messaging
+            <p className="text-sm text-gray-500 max-w-xs mb-5">
+              Choose an existing conversation from the list or start a new conversation with a contact
             </p>
+            <button
+              onClick={() => setIsNewChatModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition-all shadow-lg shadow-primary-500/25 active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Start New Chat</span>
+            </button>
           </div>
         )}
       </div>
+
+      <StartChatModal
+        isOpen={isNewChatModalOpen}
+        onClose={() => setIsNewChatModalOpen(false)}
+        onSelectContact={handleStartChatWithContact}
+      />
     </div>
   );
 }
+

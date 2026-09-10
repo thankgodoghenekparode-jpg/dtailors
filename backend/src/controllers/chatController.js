@@ -3,18 +3,66 @@ const { paginate, formatPaginationResponse } = require('../utils/helpers');
 
 const prisma = new PrismaClient();
 
+async function resolveSellerProfile(targetId) {
+  if (!targetId) return null;
+  // 1. Try SellerProfile by id
+  let seller = await prisma.sellerProfile.findUnique({ where: { id: targetId } });
+  if (seller) return seller;
+
+  // 2. Try SellerProfile by userId
+  seller = await prisma.sellerProfile.findUnique({ where: { userId: targetId } });
+  if (seller) return seller;
+
+  // 3. Try TailorProfile by id
+  const tailor = await prisma.tailorProfile.findUnique({ where: { id: targetId } });
+  if (tailor) {
+    seller = await prisma.sellerProfile.findUnique({ where: { userId: tailor.userId } });
+    if (seller) return seller;
+    const u = await prisma.user.findUnique({ where: { id: tailor.userId } });
+    if (u) {
+      return await prisma.sellerProfile.create({
+        data: { userId: u.id, storeName: u.name, logo: u.avatar }
+      });
+    }
+  }
+
+  // 4. Try VendorProfile by id
+  const vendor = await prisma.vendorProfile.findUnique({ where: { id: targetId } });
+  if (vendor) {
+    seller = await prisma.sellerProfile.findUnique({ where: { userId: vendor.userId } });
+    if (seller) return seller;
+    const u = await prisma.user.findUnique({ where: { id: vendor.userId } });
+    if (u) {
+      return await prisma.sellerProfile.create({
+        data: { userId: u.id, storeName: vendor.businessName || u.name, logo: vendor.logo || u.avatar }
+      });
+    }
+  }
+
+  // 5. Try User by id
+  const u = await prisma.user.findUnique({ where: { id: targetId } });
+  if (u) {
+    return await prisma.sellerProfile.create({
+      data: { userId: u.id, storeName: u.name, logo: u.avatar }
+    });
+  }
+
+  return null;
+}
+
 const getOrCreateConversation = async (req, res) => {
   try {
-    const { sellerId, productId } = req.body;
+    const { sellerId, participantId, recipientId, userId, productId } = req.body;
+    const targetId = sellerId || participantId || recipientId || userId;
     const buyerId = req.user.id;
 
-    if (!sellerId) {
-      return res.status(400).json({ error: 'Seller ID is required' });
+    if (!targetId) {
+      return res.status(400).json({ error: 'Recipient/Seller ID is required' });
     }
 
-    const seller = await prisma.sellerProfile.findUnique({ where: { id: sellerId } });
+    const seller = await resolveSellerProfile(targetId);
     if (!seller) {
-      return res.status(404).json({ error: 'Seller not found' });
+      return res.status(404).json({ error: 'Recipient not found' });
     }
 
     if (seller.userId === buyerId) {
@@ -24,7 +72,7 @@ const getOrCreateConversation = async (req, res) => {
     const existing = await prisma.conversation.findFirst({
       where: {
         buyerId,
-        sellerId,
+        sellerId: seller.id,
         ...(productId ? { productId } : {})
       }
     });
@@ -47,7 +95,7 @@ const getOrCreateConversation = async (req, res) => {
     const conversation = await prisma.conversation.create({
       data: {
         buyerId,
-        sellerId,
+        sellerId: seller.id,
         productId: productId || null
       },
       include: {
