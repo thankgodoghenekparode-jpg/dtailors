@@ -8,8 +8,18 @@ export interface ChatParticipant {
 
 export interface Conversation {
   id: string;
-  participants: ChatParticipant[];
-  participantIds: string[];
+  buyerId?: string;
+  sellerId?: string;
+  otherParticipant?: ChatParticipant;
+  buyer?: ChatParticipant;
+  seller?: {
+    id: string;
+    storeName?: string;
+    logo?: string;
+    user?: ChatParticipant;
+  };
+  participants?: ChatParticipant[];
+  participantIds?: string[];
   productId?: string;
   product?: {
     id: string;
