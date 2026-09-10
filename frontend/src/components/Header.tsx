@@ -17,9 +17,11 @@ import {
   MessageCircle,
   Heart,
   ShoppingCart,
+  Download,
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
+import { usePWA } from "@/components/PWAProvider";
 
 const navLinks = [
   { href: "/market", label: "Market", icon: ShoppingBag },
@@ -35,6 +37,7 @@ export default function Header() {
   const router = useRouter();
   const { user, logout, loadUser } = useAuthStore();
   const { count: cartCount, loadCart } = useCartStore();
+  const { isInstallable, promptInstall } = usePWA();
 
   useEffect(() => {
     loadUser();
@@ -99,6 +102,17 @@ export default function Header() {
                 </Link>
               );
             })}
+
+            {isInstallable && (
+              <button
+                onClick={promptInstall}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-primary-600 text-white text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
+                title="Install D Tailors as an app on your device"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Install App
+              </button>
+            )}
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
