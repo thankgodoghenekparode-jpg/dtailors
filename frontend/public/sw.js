@@ -2,7 +2,8 @@ const CACHE_NAME = 'dtailors-pwa-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
-  '/logo-icon.svg',
+  '/logo.png',
+  '/logo-icon.png',
   '/icon-192.png',
   '/icon-512.png',
   '/apple-icon.png',

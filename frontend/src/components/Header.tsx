@@ -75,9 +75,11 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500 shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform duration-200">
-              <Scissors className="h-5 w-5 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="D Tailors Logo"
+              className="h-10 w-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-200"
+            />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-stone-900 via-stone-800 to-primary-900 bg-clip-text text-transparent">
               D Tailors
             </span>

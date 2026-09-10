@@ -26,9 +26,9 @@
       "type": "image/png"
     },
     {
-      "src": "/logo-icon.svg",
+      "src": "/logo-icon.png",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

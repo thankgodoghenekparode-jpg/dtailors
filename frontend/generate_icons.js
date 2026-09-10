@@ -3,11 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 const publicDir = path.join(__dirname, 'public');
-const svgPath = path.join(publicDir, 'logo-icon.svg');
+const logoPath = path.join(publicDir, 'logo.png');
 
 async function generateIcons() {
   console.log('Generating PWA icons matching original D Tailors logo...');
-  const svgBuffer = fs.readFileSync(svgPath);
+  const logoBuffer = fs.readFileSync(logoPath);
 
   const sizes = [
     { name: 'icon-192.png', width: 192, height: 192 },
@@ -18,7 +18,7 @@ async function generateIcons() {
 
   for (const item of sizes) {
     const outputPath = path.join(publicDir, item.name);
-    await sharp(svgBuffer)
+    await sharp(logoBuffer)
       .resize(item.width, item.height)
       .png()
       .toFile(outputPath);
@@ -26,7 +26,7 @@ async function generateIcons() {
   }
 
   const icoPath = path.join(__dirname, 'src', 'app', 'favicon.ico');
-  await sharp(svgBuffer)
+  await sharp(logoBuffer)
     .resize(32, 32)
     .toFormat('png')
     .toFile(icoPath);

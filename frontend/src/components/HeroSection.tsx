@@ -1,85 +1,144 @@
 "use client";
 
 import Link from "next/link";
-import { Scissors, ShoppingBag, Briefcase } from "lucide-react";
+import { Scissors, ShoppingBag, Briefcase, Sparkles, ArrowRight } from "lucide-react";
+import { motion, Variants } from "framer-motion";
 import SearchBar from "./SearchBar";
 
 export default function HeroSection() {
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 35, scale: 0.95, filter: "blur(6px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: {
+        type: "spring",
+        stiffness: 220,
+        damping: 20,
+      },
+    },
+  };
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-40 h-40 border-2 border-white rounded-full" />
-        <div className="absolute top-20 right-20 w-24 h-24 border-2 border-white rounded-full" />
-        <div className="absolute bottom-10 left-1/4 w-32 h-32 border-2 border-white rounded-full" />
-        <div className="absolute -bottom-5 right-1/3 w-20 h-20 border-2 border-white rounded-full" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-stone-950 via-orange-950 to-stone-900 text-white py-20 md:py-28">
+      {/* Dynamic Animated Ambient Orbs */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+            x: [0, 30, 0],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-orange-500 via-amber-500 to-rose-600 rounded-full blur-[140px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1.1, 0.9, 1.1],
+            opacity: [0.2, 0.5, 0.2],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-0 right-10 w-96 h-96 bg-primary-600/40 rounded-full blur-3xl"
+        />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="text-center max-w-3xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white/90 text-sm font-medium mb-6">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Africa&apos;s Premier Fashion Marketplace
-          </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="text-center max-w-3xl mx-auto space-y-6"
+        >
+          {/* Badge Assembly */}
+          <motion.div variants={itemVariants} className="inline-block">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-amber-300 text-xs sm:text-sm font-semibold shadow-lg shadow-black/20">
+              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              Africa&apos;s Premier Fashion & Textile Marketplace
+            </div>
+          </motion.div>
 
-          {/* Heading */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-            Connecting Tailors, Fashion Businesses, and Customers{" "}
-            <span className="text-yellow-200">Everywhere</span>
-          </h1>
+          {/* Heading Writeup Assembly */}
+          <motion.h1
+            variants={itemVariants}
+            className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] text-white"
+          >
+            Connecting Tailors, Fashion Houses & Customers{" "}
+            <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-200 bg-clip-text text-transparent underline decoration-amber-400/40 decoration-wavy decoration-2">
+              Everywhere
+            </span>
+          </motion.h1>
 
-          {/* Subtitle */}
-          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10">
-            Find skilled tailors, shop authentic African fabrics, discover job opportunities, and grow your fashion business.
-          </p>
+          {/* Subtitle Assembly */}
+          <motion.p
+            variants={itemVariants}
+            className="text-base sm:text-xl text-stone-300 max-w-2xl mx-auto font-normal leading-relaxed"
+          >
+            Discover master tailors, shop authentic African fabrics, post & find fashion jobs, and grow your tailoring enterprise seamlessly.
+          </motion.p>
 
-          {/* Search Bar */}
-          <div className="max-w-3xl mx-auto mb-10">
-            <SearchBar />
-          </div>
+          {/* Search Bar Assembly */}
+          <motion.div variants={itemVariants} className="max-w-2xl mx-auto pt-2">
+            <div className="p-2 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
+              <SearchBar />
+            </div>
+          </motion.div>
 
-          {/* Quick Actions */}
-          <div className="flex flex-wrap justify-center gap-3">
+          {/* Quick Action Buttons Assembly */}
+          <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-3.5 pt-4">
             <Link
               href="/tailors"
-              className="flex items-center gap-2 px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors shadow-lg"
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.04] active:scale-[0.97] transition-all duration-200"
             >
               <Scissors className="w-5 h-5" />
               Find a Tailor
+              <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/vendors"
-              className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-white/10 backdrop-blur-md text-white font-semibold rounded-xl border border-white/20 hover:bg-white/20 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
             >
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingBag className="w-5 h-5 text-amber-300" />
               Shop Fabrics
             </Link>
             <Link
               href="/jobs"
-              className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-white/10 backdrop-blur-md text-white font-semibold rounded-xl border border-white/20 hover:bg-white/20 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
             >
-              <Briefcase className="w-5 h-5" />
+              <Briefcase className="w-5 h-5 text-emerald-400" />
               Find a Job
             </Link>
-          </div>
+          </motion.div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto mt-14">
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-white">2K+</div>
-              <div className="text-sm text-white/70">Tailors</div>
+          {/* Stat Cards Assembly */}
+          <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-8">
+            <div className="p-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-amber-400/50 transition-colors">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">2.5K+</div>
+              <div className="text-xs text-stone-400 font-medium mt-0.5">Verified Tailors</div>
             </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-white">500+</div>
-              <div className="text-sm text-white/70">Vendors</div>
+            <div className="p-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-amber-400/50 transition-colors">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">1.2K+</div>
+              <div className="text-xs text-stone-400 font-medium mt-0.5">Fabric Vendors</div>
             </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-white">1K+</div>
-              <div className="text-sm text-white/70">Jobs Posted</div>
+            <div className="p-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-amber-400/50 transition-colors">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">5K+</div>
+              <div className="text-xs text-stone-400 font-medium mt-0.5">Jobs & Orders</div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

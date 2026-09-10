@@ -134,7 +134,7 @@ export default function NewProductPage() {
 
     setLoading(true);
     try {
-      await api.post("/market", {
+      await api.post("/sellers/products", {
         name: form.name.trim(),
         description: form.description.trim(),
         price: Number(form.price),

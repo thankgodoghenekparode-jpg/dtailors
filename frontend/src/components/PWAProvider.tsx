@@ -98,9 +98,7 @@ export default function PWAProvider({ children }: { children: React.ReactNode })
       {isInstallable && showBanner && !isInstalled && (
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-50 bg-stone-900/95 text-white p-4 rounded-2xl shadow-2xl border border-stone-800 backdrop-blur-xl flex items-center justify-between gap-4 animate-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500 p-0.5 shadow-md flex-shrink-0 flex items-center justify-center">
-              <img src="/logo-icon.svg" alt="D Tailors Logo" className="w-full h-full object-contain" />
-            </div>
+            <img src="/logo.png" alt="D Tailors Logo" className="h-11 w-11 rounded-xl object-cover shadow-md flex-shrink-0" />
             <div>
               <p className="text-sm font-extrabold text-white">Install D Tailors</p>
               <p className="text-xs text-stone-400">Install as an app for fast offline access</p>

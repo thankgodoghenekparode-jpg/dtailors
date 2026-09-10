@@ -19,6 +19,7 @@ const upload = require('../middleware/upload');
 
 router.post('/become-seller', authenticate, becomeSeller);
 router.get('/my-store', authenticate, getMyStore);
+router.get('/me', authenticate, getMyStore);
 router.put('/my-store', authenticate, upload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'banner', maxCount: 1 }
@@ -39,5 +40,6 @@ router.get('/sales', authenticate, getSalesSummary);
 
 router.get('/', searchSellers);
 router.get('/:id', getSeller);
+router.get('/:id/products', getSeller);
 
 module.exports = router;

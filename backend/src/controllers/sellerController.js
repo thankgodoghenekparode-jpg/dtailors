@@ -48,7 +48,7 @@ const becomeSeller = async (req, res) => {
 
 const getMyStore = async (req, res) => {
   try {
-    const seller = await prisma.sellerProfile.findUnique({
+    let seller = await prisma.sellerProfile.findUnique({
       where: { userId: req.user.id },
       include: {
         user: { select: { id: true, name: true, email: true, avatar: true } },
@@ -57,7 +57,18 @@ const getMyStore = async (req, res) => {
     });
 
     if (!seller) {
-      return res.status(404).json({ error: 'Seller profile not found' });
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      seller = await prisma.sellerProfile.create({
+        data: {
+          userId: req.user.id,
+          storeName: user?.name ? `${user.name}'s Store` : 'My Store',
+          storeDescription: 'Official seller store'
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true, avatar: true } },
+          _count: { select: { products: true, orders: true } }
+        }
+      });
     }
 
     res.json({ seller });
@@ -176,21 +187,43 @@ const createProduct = async (req, res) => {
   try {
     const {
       name, description, price, discountPrice, category, stock,
-      location, condition, sizes, colors, specifications
+      location, condition, sizes, colors, specifications, images: bodyImages
     } = req.body;
 
     if (!name || !price || !category) {
       return res.status(400).json({ error: 'Name, price, and category are required' });
     }
 
-    const seller = await prisma.sellerProfile.findUnique({ where: { userId: req.user.id } });
+    let seller = await prisma.sellerProfile.findUnique({ where: { userId: req.user.id } });
     if (!seller) {
-      return res.status(404).json({ error: 'Seller profile not found' });
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      seller = await prisma.sellerProfile.create({
+        data: {
+          userId: req.user.id,
+          storeName: user?.name ? `${user.name}'s Store` : 'My Store',
+          storeDescription: 'Official seller store'
+        }
+      });
     }
 
-    const images = [];
+    let images = [];
     if (req.files && req.files.images) {
       req.files.images.forEach(f => images.push(`/uploads/${f.filename}`));
+    }
+    if (images.length === 0 && bodyImages) {
+      if (Array.isArray(bodyImages)) {
+        images = bodyImages;
+      } else if (typeof bodyImages === 'string') {
+        try {
+          images = JSON.parse(bodyImages);
+        } catch {
+          images = [bodyImages];
+        }
+      }
+    }
+
+    if (images.length === 0) {
+      images = ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop&q=80'];
     }
 
     const product = await prisma.marketProduct.create({

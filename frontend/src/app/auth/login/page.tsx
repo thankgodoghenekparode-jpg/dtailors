@@ -33,9 +33,11 @@ export default function LoginPage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-500 mx-auto mb-4">
-            <Scissors className="h-7 w-7 text-white" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="D Tailors Logo"
+            className="h-16 w-16 rounded-2xl object-cover shadow-md mx-auto mb-4"
+          />
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-gray-500 mt-1">Sign in to your D Tailors account</p>
         </div>

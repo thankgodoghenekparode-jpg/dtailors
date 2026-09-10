@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Star, Heart, MessageCircle, ShoppingCart, BadgeCheck, MapPin, Flame, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import { MarketProduct } from "@/lib/marketTypes";
 import useMarketStore from "@/store/marketStore";
 import useCartStore from "@/store/cartStore";
@@ -9,9 +10,10 @@ import toast from "react-hot-toast";
 
 interface MarketProductCardProps {
   product: MarketProduct;
+  index?: number;
 }
 
-export default function MarketProductCard({ product }: MarketProductCardProps) {
+export default function MarketProductCard({ product, index = 0 }: MarketProductCardProps) {
   const { wishlist, toggleWishlist } = useMarketStore();
   const { addToCart } = useCartStore();
   const isWishlisted = wishlist.includes(product.id);
@@ -60,14 +62,27 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
   };
 
   return (
-    <div className="group bg-white rounded-2xl border border-stone-200/70 overflow-hidden hover-lift flex flex-col justify-between transition-all duration-300 hover:border-primary-300 hover:shadow-xl hover:shadow-primary-500/5 relative">
-      {/* Temu-Style Deal Overlay Ribbons */}
+    <motion.div
+      initial={{ opacity: 0, y: 32, scale: 0.94 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{
+        duration: 0.45,
+        delay: Math.min(index * 0.07, 0.35),
+        type: "spring",
+        stiffness: 240,
+        damping: 20,
+      }}
+      whileHover={{ y: -6, scale: 1.015 }}
+      className="group bg-white rounded-2xl border border-stone-200/80 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-500/10 flex flex-col justify-between transition-all duration-300 hover:border-primary-300 relative"
+    >
+      {/* Product Image Box */}
       <Link href={`/market/${product.id}`} className="relative aspect-square bg-stone-100 overflow-hidden block">
         {product.images?.[0] ? (
           <img
             src={product.images[0]}
             alt={product.name}
-            className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
+            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-stone-300 bg-stone-50">
@@ -78,7 +93,7 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
         {/* Top Badges Bar */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 items-start z-10">
           {discountPercent > 0 && (
-            <span className="bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md shadow-rose-600/30 flex items-center gap-1">
+            <span className="bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md shadow-rose-600/30 flex items-center gap-1 animate-pulse">
               <Flame className="h-3 w-3 fill-white" />
               -{discountPercent}% OFF
             </span>
@@ -103,7 +118,7 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
           aria-label="Wishlist"
           className={`absolute top-2.5 right-2.5 p-2 rounded-full shadow-md backdrop-blur-md transition-all duration-200 ${
             isWishlisted
-              ? "bg-rose-500 text-white scale-110"
+              ? "bg-rose-500 text-white scale-110 shadow-rose-500/40"
               : "bg-white/90 text-stone-600 hover:text-rose-500 hover:bg-white hover:scale-110"
           }`}
         >
@@ -122,12 +137,11 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
             </span>
           </div>
 
-          <h3 className="font-bold text-stone-900 group-hover:text-primary-600 transition-colors line-clamp-2 text-xs leading-snug">
+          <h3 className="font-extrabold text-stone-900 group-hover:text-primary-600 transition-colors line-clamp-2 text-xs leading-snug tracking-tight">
             {product.name}
           </h3>
         </Link>
 
-        {/* Facebook Marketplace Location Pill */}
         {locationStr && (
           <div className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-stone-500">
             <MapPin className="h-3 w-3 text-primary-500 shrink-0" />
@@ -161,7 +175,7 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
           </span>
         </div>
 
-        {/* Stock Scarcity Bar (Temu Style) */}
+        {/* Stock Scarcity Bar */}
         <div className="mt-3">
           <div className="flex justify-between text-[10px] font-bold mb-1">
             {outOfStock ? (
@@ -190,7 +204,7 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
         <div className="mt-4 flex gap-2 pt-3 border-t border-stone-100 mt-auto">
           <button
             onClick={handleChat}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-stone-700 text-xs font-bold hover:bg-stone-50 transition-all active:scale-[0.98]"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 text-stone-700 text-xs font-bold hover:bg-stone-50 transition-all active:scale-[0.97]"
           >
             <MessageCircle className="h-3.5 w-3.5 text-stone-500" />
             <span className="hidden sm:inline">Chat</span>
@@ -198,14 +212,13 @@ export default function MarketProductCard({ product }: MarketProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={outOfStock}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white text-xs font-bold hover:shadow-md hover:shadow-primary-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white text-xs font-bold hover:shadow-lg hover:shadow-primary-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97]"
           >
             <ShoppingCart className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Add to Cart</span>
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
-

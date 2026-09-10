@@ -284,6 +284,52 @@ const addReview = async (req, res) => {
   }
 };
 
+const getRelatedProducts = async (req, res) => {
+  try {
+    const product = await prisma.marketProduct.findUnique({ where: { id: req.params.id } });
+    if (!product) {
+      return res.json({ data: [], related: [] });
+    }
+    const related = await prisma.marketProduct.findMany({
+      where: {
+        category: product.category,
+        id: { not: product.id },
+        isActive: true,
+        status: 'active'
+      },
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        seller: {
+          select: { id: true, storeName: true, logo: true, rating: true, isVerified: true }
+        }
+      }
+    });
+    res.json({ data: related, related });
+  } catch (error) {
+    console.error('GetRelatedProducts error:', error);
+    res.json({ data: [], related: [] });
+  }
+};
+
+const getSellerProductsById = async (req, res) => {
+  try {
+    const products = await prisma.marketProduct.findMany({
+      where: { sellerId: req.params.id, isActive: true, status: 'active' },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        seller: {
+          select: { id: true, storeName: true, logo: true, rating: true, isVerified: true }
+        }
+      }
+    });
+    res.json({ data: products, products });
+  } catch (error) {
+    console.error('GetSellerProductsById error:', error);
+    res.status(500).json({ error: 'Failed to fetch seller products' });
+  }
+};
+
 module.exports = {
   browseProducts,
   getCategories,
@@ -292,5 +338,7 @@ module.exports = {
   deleteProduct,
   toggleWishlist,
   checkWishlist,
-  addReview
+  addReview,
+  getRelatedProducts,
+  getSellerProductsById
 };
