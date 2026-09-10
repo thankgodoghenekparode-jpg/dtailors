@@ -20,9 +20,6 @@ import {
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
-import Logo from "@/components/Logo";
-import { usePWA } from "@/components/PWAProvider";
-import { Download } from "lucide-react";
 
 const navLinks = [
   { href: "/market", label: "Market", icon: ShoppingBag },
@@ -38,7 +35,6 @@ export default function Header() {
   const router = useRouter();
   const { user, logout, loadUser } = useAuthStore();
   const { count: cartCount, loadCart } = useCartStore();
-  const { isInstallable, promptInstall } = usePWA();
 
   useEffect(() => {
     loadUser();
@@ -75,8 +71,13 @@ export default function Header() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Logo size="md" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500 shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform duration-200">
+              <Scissors className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-stone-900 via-stone-800 to-primary-900 bg-clip-text text-transparent">
+              D Tailors
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1.5 bg-stone-50/80 p-1.5 rounded-full border border-stone-200/50">
@@ -98,17 +99,6 @@ export default function Header() {
                 </Link>
               );
             })}
-
-            {isInstallable && (
-              <button
-                onClick={promptInstall}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-primary-600 text-white text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
-                title="Install D Tailors as an app on your device"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Install App
-              </button>
-            )}
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
@@ -161,13 +151,7 @@ export default function Header() {
                       <p className="text-xs font-bold text-stone-900 truncate">{user.name}</p>
                       <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
                     </div>
-                    <div className="p-1 space-y-0.5">
-                      <Link
-                        href="/seller/products/new"
-                        className="block px-3 py-2 rounded-lg text-xs font-bold text-amber-700 bg-amber-50/80 hover:bg-amber-100 transition-colors"
-                      >
-                        + List Item for Sale
-                      </Link>
+                    <div className="p-1">
                       <Link
                         href="/dashboard/profile"
                         className="block px-3 py-2 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-100/80 transition-colors"
