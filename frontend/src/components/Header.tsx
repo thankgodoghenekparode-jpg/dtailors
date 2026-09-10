@@ -17,12 +17,13 @@ import {
   MessageCircle,
   Heart,
   ShoppingCart,
+  Plus,
+  Download,
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
 import Logo from "@/components/Logo";
 import { usePWA } from "@/components/PWAProvider";
-import { Download } from "lucide-react";
 
 const navLinks = [
   { href: "/market", label: "Market", icon: ShoppingBag },
@@ -112,6 +113,14 @@ export default function Header() {
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
+            <Link
+              href="/list-item"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 text-white text-xs font-extrabold shadow-sm shadow-primary-500/20 hover:shadow-md hover:scale-105 active:scale-95 transition-all mr-1"
+            >
+              <Plus className="h-3.5 w-3.5 stroke-[3]" />
+              List Item
+            </Link>
+
             {user ? (
               <>
                 <Link
@@ -231,6 +240,13 @@ export default function Header() {
                 </Link>
               );
             })}
+            <Link
+              href="/list-item"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-accent-500 text-white text-sm font-extrabold shadow-md my-1"
+            >
+              <Plus className="h-4 w-4 stroke-[3]" />
+              + List Item for Sale
+            </Link>
             <hr className="my-2 border-stone-100" />
             {user ? (
               <>

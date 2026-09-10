@@ -19,6 +19,7 @@ import {
   Star,
   Users,
   MapPin,
+  Plus,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -110,7 +111,14 @@ export default function HomePage() {
               Connect directly with verified tailors, authentic African fabric vendors, and top fashion employers in one premium ecosystem.
             </p>
 
-            <div className="pt-4 flex flex-col sm:flex-row gap-3.5 justify-center items-center">
+            <div className="pt-4 flex flex-col sm:flex-row flex-wrap gap-3.5 justify-center items-center">
+              <Link
+                href="/list-item"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-accent-400 via-amber-400 to-amber-500 text-stone-950 rounded-xl font-extrabold shadow-lg shadow-accent-500/25 hover:scale-[1.03] active:scale-[0.98] transition-all"
+              >
+                <Plus className="h-5 w-5 stroke-[3]" />
+                + List Item for Sale
+              </Link>
               <Link
                 href="/tailors"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
